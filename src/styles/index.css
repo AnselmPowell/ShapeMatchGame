@@ -1,0 +1,60 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom CSS animations and styles */
+@keyframes sparkle {
+  0%, 100% { 
+    opacity: 0; 
+    transform: scale(0.5); 
+  }
+  50% { 
+    opacity: 1; 
+    transform: scale(1); 
+  }
+}
+
+@keyframes float-up {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-100px);
+  }
+}
+
+.sparkle {
+  animation: sparkle 1s infinite;
+}
+
+.floating-particle {
+  position: absolute;
+  pointer-events: none;
+  animation: float-up 2s ease-out forwards;
+}
+
+/* Brick pattern styles */
+.brick-pattern {
+  background-image: 
+    linear-gradient(0deg, transparent 30%, rgba(0,0,0,0.3) 30%, rgba(0,0,0,0.3) 32%, transparent 32%),
+    linear-gradient(0deg, transparent 64%, rgba(0,0,0,0.3) 64%, rgba(0,0,0,0.3) 66%, transparent 66%),
+    linear-gradient(90deg, transparent 24%, rgba(0,0,0,0.3) 24%, rgba(0,0,0,0.3) 26%, transparent 26%),
+    linear-gradient(90deg, transparent 74%, rgba(0,0,0,0.3) 74%, rgba(0,0,0,0.3) 76%, transparent 76%);
+}
+
+/* Base styles */
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
