@@ -32,7 +32,12 @@ const ShapeMatchGame = () => {
     matchingBoxes,
     isAnimating,
     isGravityAnimating,
-    resetGame
+    boardMode,
+    currentBoardIndex,
+    totalBoards,
+    resetGame,
+    toggleBoardMode,
+    nextBoard
   } = gameState;
   
   const {
@@ -81,7 +86,7 @@ const ShapeMatchGame = () => {
       <BackgroundParticles />
 
       {/* Main content */}
-      <div className="relative z-10 w-full max-w-2xl">
+      <div className="relative z-10 w-full max-w-3xl">
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-5xl font-extrabold bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 bg-clip-text text-transparent mb-4 drop-shadow-lg">
@@ -104,14 +109,25 @@ const ShapeMatchGame = () => {
         />
 
         {/* Controls */}
-        <GameControls onResetGame={resetGame} />
+        <GameControls 
+          onResetGame={resetGame}
+          boardMode={boardMode}
+          currentBoardIndex={currentBoardIndex}
+          totalBoards={totalBoards}
+          onToggleBoardMode={toggleBoardMode}
+          onNextBoard={nextBoard}
+        />
       </div>
 
       {/* Victory Modal */}
       <VictoryModal 
         moves={moves}
         onPlayAgain={resetGame}
+        onNextBoard={nextBoard}
         isVisible={isVictory}
+        boardMode={boardMode}
+        currentBoardIndex={currentBoardIndex}
+        totalBoards={totalBoards}
       />
     </div>
   );

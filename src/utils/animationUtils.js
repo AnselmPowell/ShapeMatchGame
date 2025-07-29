@@ -7,14 +7,18 @@ import { isMoveableBox, isEmpty } from './gridUtils';
 export const calculateFallPaths = (currentGrid) => {
   const fallPaths = [];
   
-  for (let col = 0; col < GRID_CONFIG.COLS; col++) {
-    for (let row = 0; row < GRID_CONFIG.ROWS; row++) {
+  // Get actual grid dimensions
+  const gridRows = currentGrid.length;
+  const gridCols = currentGrid[0]?.length || 0;
+  
+  for (let col = 0; col < gridCols; col++) {
+    for (let row = 0; row < gridRows; row++) {
       const box = currentGrid[row][col];
       
       if (isMoveableBox(box)) {
         // Find where this box will land
         let targetRow = row;
-        for (let checkRow = row + 1; checkRow < GRID_CONFIG.ROWS; checkRow++) {
+        for (let checkRow = row + 1; checkRow < gridRows; checkRow++) {
           if (isEmpty(currentGrid[checkRow][col])) {
             targetRow = checkRow;
           } else {

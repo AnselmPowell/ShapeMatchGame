@@ -14,13 +14,17 @@ export const applyGravity = (inputGrid) => {
   let changed = true;
   let iterations = 0;
   
+  // Get actual grid dimensions instead of using GRID_CONFIG
+  const gridRows = inputGrid.length;
+  const gridCols = inputGrid[0]?.length || 0;
+  
   while (changed && iterations < GAME_CONFIG.MAX_GRAVITY_ITERATIONS) {
     changed = false;
     iterations++;
     
     // Process each column from bottom to top
-    for (let col = 0; col < GRID_CONFIG.COLS; col++) {
-      for (let row = GRID_CONFIG.ROWS - 2; row >= 0; row--) {
+    for (let col = 0; col < gridCols; col++) {
+      for (let row = gridRows - 2; row >= 0; row--) {
         const currentBox = newGrid[row][col];
         
         // Only process moveable boxes
@@ -48,8 +52,12 @@ export const findAllMatches = (grid) => {
   const matches = [];
   const processed = new Set();
   
-  for (let row = 0; row < GRID_CONFIG.ROWS; row++) {
-    for (let col = 0; col < GRID_CONFIG.COLS; col++) {
+  // Get actual grid dimensions
+  const gridRows = grid.length;
+  const gridCols = grid[0]?.length || 0;
+  
+  for (let row = 0; row < gridRows; row++) {
+    for (let col = 0; col < gridCols; col++) {
       const box = grid[row][col];
       
       if (isMoveableBox(box)) {
@@ -57,7 +65,8 @@ export const findAllMatches = (grid) => {
           const adjRow = row + dRow;
           const adjCol = col + dCol;
           
-          if (isValidCoordinate(adjRow, adjCol)) {
+          // Check bounds using actual grid dimensions
+          if (adjRow >= 0 && adjRow < gridRows && adjCol >= 0 && adjCol < gridCols) {
             const adjacentBox = grid[adjRow][adjCol];
             
             // Found a match!
@@ -99,8 +108,12 @@ export const isValidMove = (grid, fromRow, fromCol, toRow, toCol) => {
   // Must be same row (horizontal only)
   if (fromRow !== toRow) return false;
   
+  // Get actual grid dimensions for bounds checking
+  const gridRows = grid.length;
+  const gridCols = grid[0]?.length || 0;
+  
   // Must be within bounds
-  if (!isValidCoordinate(toRow, toCol)) return false;
+  if (toRow < 0 || toRow >= gridRows || toCol < 0 || toCol >= gridCols) return false;
   
   // Target must be empty
   if (!isEmpty(grid[toRow][toCol])) return false;

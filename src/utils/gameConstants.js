@@ -1,7 +1,7 @@
 // Game configuration constants
 export const GRID_CONFIG = {
-  ROWS: 8,
-  COLS: 10,
+  ROWS: 10,
+  COLS: 14, // Updated to support wider grids
   CELL_SIZE: 48, // 12 * 4px (w-12)
   CELL_GAP: 4,   // gap-1
   TOTAL_CELL_SIZE: 52 // CELL_SIZE + CELL_GAP
@@ -15,6 +15,186 @@ export const SHAPES = [
   { symbol: '★', color: 'text-yellow-500' },   // Star - Yellow
   { symbol: '♦', color: 'text-purple-500' },   // Diamond - Purple
   { symbol: '♠', color: 'text-pink-500' }      // Spade - Pink
+];
+
+// Symbol to shape mapping for custom board conversion
+export const SYMBOL_TO_SHAPE = {
+  '●': { symbol: '●', color: 'text-red-500' },
+  '■': { symbol: '■', color: 'text-blue-500' },
+  '▲': { symbol: '▲', color: 'text-green-500' },
+  '★': { symbol: '★', color: 'text-yellow-500' },
+  '♦': { symbol: '♦', color: 'text-purple-500' },
+  '♠': { symbol: '♠', color: 'text-pink-500' }
+};
+
+// Custom board layouts - Educational progression
+export const CUSTOM_BOARDS = [
+  [
+  [null, null, null, "X", null, null, null, '▲', null, null],
+  [null, null, null, null, null, null, null, "X", "X", "X"],
+  [null, null, null, '♦', '♠', null, '♦', null, '♠', null],
+  [null, null, null, "X", "X", null, "X", "X", "X", "X"],
+  [null, null, null, "X", null, null, null, null, null, '▲'],
+  [null, '▲', "X", null, null, null, null, null, '♠', null],
+  [null, '♠', null, null, '♦', null, null, '▲', "X", "X"],
+  [null, "X", "X", null, "X", null, null, "X", null, "X"]
+],
+
+  [
+  ['▲', null, null, null, null, null, null, null, "X", '★', null],
+  ["X", "X", "X", null, null, null, '▲', "X", "X", "X", null],
+  [null, null, null, null, "X", null, '●', null, null, null, null],
+  [null, null, '★', '●', null, null, "X", null, '★', "X", null],
+  [null, null, "X", "X", "X", null, null, null, "X", null, null],
+  [null, null, null, null, "X", null, null, null, null, null, null],
+  [null, null, null, null, null, null, null, null, null, null, null],
+  [null, null, '■', null, null, '■', null, null, null, null, null],
+  ["X", '●', "X", "X", "X", "X", '▲', '●', "X", "X", null]
+],
+  [
+    [null, null, null, null, null, null, null, null, null ],
+    [null, null, null, null, null, null, null, null, null ],
+    [null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null],
+    [null, null, null, '■', null, null, '■', null, null]
+  ],
+  [
+    [null, null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, '■', null, null, null],
+    [null, null, '■', '♠', null, null, '♠', null, null, null]
+  ],
+   [
+    [null, null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null, null],
+    [null, null, '♠', null, null, null, null, '♠', null, null],
+    [null, null, "X", null, null, null, null, "X", null, null],
+    [null, null, null, '♦', null, '♦', null, null, null, null]
+  ],
+  [
+    [null, null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, '●', null, null, null, null, null],
+    [null, null, null, null, '■', null, null, null, null, null],
+    [null, null, null, null, "X", null, null, null, null, null],
+    [null, null, '●', null, "X", null, null, '■', null, null]
+  ],
+
+  [
+    [null, null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, '♠', null, null, null, null],
+    [null, null, null, null, null, '●', null, null, null, null],
+    [null, null, null, null, null, "X", null, null, null, null],
+    [null, null, '■', '●', '■', "X", '♠', null, null, null]
+  ],
+
+  [
+    [null, null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, '●', null, null, null, null],
+    [null, null, null, null, '■', '★', null, null, null, null],
+    [null, null, '■', null, "X", "X", null, null, null, null],
+    [null, null, '●', '■', null, '★', null, '★', null, null]
+  ],
+   [
+    [null, null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, '▲', null, null],
+    ['●', null, null, '●', null, null, null, "X", null, null],
+    ["X", null, null, "X", null, null, null, '▲', null, null],
+    ["X", "X", null, null, null, null, null, "X", null, null],
+    [null, null, '♦', null, null, '▲', null, null, null, null],
+    [null, null, "X", null, null, '♦', null, null, null, null],
+    [null, null, null, null, null, "X", null, null, null, null]
+  ],
+   [
+    [null, null, null, '★', null, null, null, null, null, null],
+    [null, '●', null, '●', null, null, '■', null, '■', null],
+    [null, "X", null, "X", null, null, "X", null, "X", null],
+    [null, null, null, null, null, null, null, null, null, null],
+    [null, '★', null, '♦', null, null, '♠', null, '▲', null],
+    [null, "X", "X", "X", null, null, "X", "X", "X", null],
+    [null, null, '♦', null, '♦', null, null, null, '♠', null],
+    [null, null, null, null, null, null, null, null, '▲', null]
+  ],
+   [
+  [null, null, null, null, null, null, null, null, null, null],
+  [null, null, null, null, null, null, null, '■', null, null],
+  ['♦', null, null, null, null, '♦', '★', '▲', null, null],
+  ["X", "X", null, null, null, "X", "X", "X", null, null],
+  ["X", null, null, null, null, null, null, null, null, '■'],
+  [null, null, null, '■', null, null, null, null, null, '▲'],
+  ["X", "X", '♦', "X", '▲', "X", "X", "X", "X", "X"],
+  [null, null, "X", "X", '★', "X", null, null, null, null]
+],
+  [
+    [null, null, null, null, null, null, null, null, null, null], 
+    [null, '★', null, null, null, null, null, '●', null, null], 
+    [null, "X", null, "X", null, null, null, "X", null, null], 
+    [null, null, null, null, null, null, '■', null, null, null], 
+    [null, '●', null, null, null, '★', null, '♠', null, null], 
+    [null, "X", "X", null, null, null, null, '■', null, null], 
+    [null, null, null, null, null, "X", null, "X", null, null], 
+    [null, null, '♠', null, '♠', null, null, null, null, null]
+  ],
+  
+  [
+    [null, null, null, null, null, null, null, null, null, '■', null],
+    [null, "X", '▲', null, null, null, null, null, null, "X", null],
+    ['■', null, '♠', null, null, null, null, null, null, "X", null],
+    ['▲', null, '●', null, null, null, null, null, null, '♦', null],
+    ["X", null, "X", null, '■', null, null, null, null, "X", null],
+    [null, null, null, '▲', "X", null, null, null, '♦', null, null],
+    [null, null, null, '♠', '★', null, null, null, '●', null, null],
+    [null, '■', null, "X", '♦', '★', null, '●', '♦', null, null]
+  ],
+    [
+    [null, null, null, null, null, null, '■', null, '♠', null, null],
+    ["X", '●', null, null, null, null, "X", "X", "X", "X", null],
+    ["X", "X",'♠' , "X", "X", null, null, null, null, null, null],
+    [null, null, "X", null, null, '★', '■', null, null, '★', null],
+    [null, null, null, null, null, "X", "X", null, null, "X", "X"],
+    [null, null, null, null, null, null, null, null, '●', null, null],
+    [null, '▲', null, null, '♦', null, null, null, '♦', null, '▲'],
+    ["X", "X", '●', "X", "X", "X", "X", "X", '●', "X", "X"],
+    [null, null, "X", null, null, null, null, null, "X", null, null]
+  ],
+   [
+    [null, null, null, null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, '■', '♠', '■', null],
+    [null, null, null, null, '▲', null, '●', null, '♦', '▲', '♦', null],
+    [null, null, null, null, "X", '♠', "X", null, "X", "X", "X", null],
+    [null, null, null, null, "X", "X", "X", null, null, "X", null, null],
+    [null, null, null, null, null, null, '●', null, null, null, null, null]
+  ],
+  [
+    ['★', null, null, null, null, null, null, null, null, null, null, "X", null, null],
+    ["X", null, null, null, null, '■', '▲', null, null, null, '★', null, null, null],
+    [null, null, null, null, "X", "X", "X", null, "X", null, '●', null, null, null],
+    [null, null, null, '▲', null, null, null, '♠', null, null, "X", null, '♠', null],
+    ['■', null, null, '■', null, null, null, '▲', null, null, null, null, '●', null],
+    ["X", '▲', "X", "X", null, null, null, '★', null, '●', null, null, "X", null],
+    ["X", "X", "X", "X", '★', "X", "X", '▲', "X", "X", '▲', "X", null, null],
+    ["X", "X", "X", "X", "X", null, "X", "X", null, "X", "X", null, null, null]
+  ],
 ];
 
 // Animation timing constants

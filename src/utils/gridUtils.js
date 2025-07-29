@@ -1,4 +1,4 @@
-import { GRID_CONFIG, SHAPES, GAME_CONFIG } from './gameConstants';
+import { GRID_CONFIG, SHAPES, GAME_CONFIG, SYMBOL_TO_SHAPE } from './gameConstants';
 
 /**
  * Create a random moveable box with shape and color
@@ -27,6 +27,42 @@ export const createEmptyGrid = () => {
   return Array(GRID_CONFIG.ROWS)
     .fill(null)
     .map(() => Array(GRID_CONFIG.COLS).fill(null));
+};
+
+/**
+ * Convert simple custom board format to internal game format
+ */
+export const convertCustomBoard = (simpleBoard) => {
+  // Use the actual dimensions of the custom board
+  const boardRows = simpleBoard.length;
+  const boardCols = simpleBoard[0]?.length || 0;
+  
+  // Create grid with the exact dimensions of the custom board
+  const grid = Array(boardRows)
+    .fill(null)
+    .map(() => Array(boardCols).fill(null));
+  
+  for (let row = 0; row < boardRows; row++) {
+    for (let col = 0; col < boardCols; col++) {
+      const cell = simpleBoard[row]?.[col];
+      
+      if (cell === null) {
+        grid[row][col] = null;
+      } else if (cell === "X") {
+        grid[row][col] = createBlockerBox();
+      } else if (SYMBOL_TO_SHAPE[cell]) {
+        // Create moveable box with consistent color
+        const shapeData = SYMBOL_TO_SHAPE[cell];
+        grid[row][col] = {
+          shape: shapeData.symbol,
+          color: shapeData.color,
+          id: Math.random().toString(36).substr(2, 9)
+        };
+      }
+    }
+  }
+  
+  return grid;
 };
 
 /**
