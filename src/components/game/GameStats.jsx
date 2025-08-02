@@ -3,18 +3,28 @@ import React from 'react';
 /**
  * Game statistics display component
  */
-const GameStats = ({ moves, remainingBoxes }) => {
+const GameStats = ({ moves, moveLimit, remainingBoxes }) => {
+  const movesRemaining = Math.max(0, moveLimit - moves);
+  
+  // Determine color based on moves remaining
+  const getMovesColor = () => {
+    const percentage = movesRemaining / moveLimit;
+    if (percentage > 0.6) return 'from-green-500 to-emerald-500';
+    if (percentage > 0.3) return 'from-yellow-500 to-amber-500';
+    return 'from-red-500 to-pink-500';
+  };
+  
   const statsConfig = [
     { 
-      label: 'Moves', 
-      value: moves, 
-      color: 'from-green-500 to-emerald-500', 
+      label: 'Moves Left', 
+      value: movesRemaining, 
+      color: getMovesColor(), 
       icon: '🎯' 
     },
     { 
-      label: 'Left', 
+      label: 'Shapes Left', 
       value: remainingBoxes, 
-      color: 'from-red-500 to-pink-500', 
+      color: 'from-blue-500 to-cyan-500', 
       icon: '📦' 
     }
   ];

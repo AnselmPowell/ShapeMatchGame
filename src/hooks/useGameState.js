@@ -6,7 +6,7 @@ import {
   convertCustomBoard 
 } from '../utils/gridUtils';
 import { applyGravity } from '../utils/gameLogicUtils';
-import { GAME_CONFIG, CUSTOM_BOARDS } from '../utils/gameConstants';
+import { GAME_CONFIG, CUSTOM_BOARDS, LEVEL_MOVE_LIMITS } from '../utils/gameConstants';
 
 /**
  * Generate a random grid with random blockers and boxes
@@ -67,6 +67,8 @@ export const useGameState = () => {
   const [grid, setGrid] = useState(() => initializeGrid('custom', 0));
   const [selectedBox, setSelectedBox] = useState(null);
   const [moves, setMoves] = useState(0);
+  const [moveLimit, setMoveLimit] = useState(LEVEL_MOVE_LIMITS[0]);
+  const [isOutOfMoves, setIsOutOfMoves] = useState(false);
   
   // Animation state
   const [matchingBoxes, setMatchingBoxes] = useState([]);
@@ -88,6 +90,7 @@ export const useGameState = () => {
     if (boardMode === 'custom') {
       const nextIndex = (currentBoardIndex + 1) % CUSTOM_BOARDS.length;
       setCurrentBoardIndex(nextIndex);
+      setMoveLimit(LEVEL_MOVE_LIMITS[nextIndex]);
       const newGrid = initializeGrid('custom', nextIndex);
       setGrid(newGrid);
       resetGameState();
@@ -97,6 +100,7 @@ export const useGameState = () => {
   const resetGameState = () => {
     setSelectedBox(null);
     setMoves(0);
+    setIsOutOfMoves(false);
     setMatchingBoxes([]);
     setIsAnimating(false);
     setFallingBoxes([]);
@@ -107,6 +111,7 @@ export const useGameState = () => {
   const resetGame = () => {
     const newGrid = initializeGrid(boardMode, currentBoardIndex);
     setGrid(newGrid);
+    setMoveLimit(LEVEL_MOVE_LIMITS[currentBoardIndex]);
     resetGameState();
   };
   
@@ -118,6 +123,9 @@ export const useGameState = () => {
     setSelectedBox,
     moves,
     setMoves,
+    moveLimit,
+    isOutOfMoves,
+    setIsOutOfMoves,
     
     // Animation state
     matchingBoxes,

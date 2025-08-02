@@ -2,11 +2,13 @@ import React from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { useGameAnimations } from '../hooks/useGameAnimations';
 import { useGameLogic } from '../hooks/useGameLogic';
+import { useDragMovement } from '../hooks/useDragMovement'; // New import
 import BackgroundParticles from './ui/BackgroundParticles';
 import GameStats from './game/GameStats';
 import GameGrid from './game/GameGrid';
 import GameControls from './game/GameControls';
 import VictoryModal from './game/VictoryModal';
+import FailureModal from './game/FailureModal';
 
 /**
  * Main Shape Match Game Component
@@ -22,16 +24,21 @@ const ShapeMatchGame = () => {
   // Initialize game logic with state and animations
   const gameLogic = useGameLogic(gameState, animations);
   
+  // Initialize drag movement system
+  const dragHandlers = useDragMovement(gameState, gameLogic);
+  
   // Extract needed values for cleaner JSX
   const {
     grid,
     selectedBox,
     setSelectedBox,
     moves,
+    moveLimit,
     fallingBoxes,
     matchingBoxes,
     isAnimating,
     isGravityAnimating,
+    isOutOfMoves,
     boardMode,
     currentBoardIndex,
     totalBoards,
@@ -50,7 +57,7 @@ const ShapeMatchGame = () => {
    * Handle grid cell clicks for selection and movement
    */
   const handleCellClick = (row, col) => {
-    if (isAnimating || isGravityAnimating) return;
+    if (isAnimating || isGravityAnimating || isOutOfMoves) return;
     
     console.log(`Clicked on (${row},${col}), selectedBox:`, selectedBox);
     
@@ -96,7 +103,11 @@ const ShapeMatchGame = () => {
         </div>
 
         {/* Stats */}
-        <GameStats moves={moves} remainingBoxes={remainingBoxes} />
+        <GameStats 
+          moves={moves} 
+          moveLimit={moveLimit} 
+          remainingBoxes={remainingBoxes} 
+        />
 
         {/* Game Grid */}
         <GameGrid 
@@ -106,6 +117,7 @@ const ShapeMatchGame = () => {
           matchingBoxes={matchingBoxes}
           isValidMoveTarget={isValidMoveTarget}
           onCellClick={handleCellClick}
+          dragHandlers={dragHandlers} // Pass drag handlers to grid
         />
 
         {/* Controls */}
@@ -124,10 +136,18 @@ const ShapeMatchGame = () => {
         moves={moves}
         onPlayAgain={resetGame}
         onNextBoard={nextBoard}
-        isVisible={isVictory}
+        isVisible={isVictory && !isOutOfMoves}
         boardMode={boardMode}
         currentBoardIndex={currentBoardIndex}
         totalBoards={totalBoards}
+      />
+
+      {/* Failure Modal */}
+      <FailureModal 
+        isVisible={isOutOfMoves && !isVictory}
+        onRetry={resetGame}
+        remainingBoxes={remainingBoxes}
+        currentBoardIndex={currentBoardIndex}
       />
     </div>
   );

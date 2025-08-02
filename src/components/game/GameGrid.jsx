@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import GameCell from './GameCell';
 
 /**
@@ -10,10 +10,51 @@ const GameGrid = ({
   fallingBoxes, 
   matchingBoxes, 
   isValidMoveTarget,
-  onCellClick 
+  onCellClick,
+  // New drag handlers prop
+  dragHandlers 
 }) => {
   // Get grid dimensions
   const gridCols = grid[0]?.length || 0;
+  
+  // Extract drag handlers
+  const { 
+    isDragging,
+    dragBox,
+    handleDragStart,
+    handleDragMove,
+    handleDragEnd 
+  } = dragHandlers || {};
+  
+  // Add global mouse/touch event listeners to track drag outside the grid
+  useEffect(() => {
+    if (isDragging) {
+      // Add global event listeners
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      document.addEventListener('touchmove', handleTouchMove, { passive: false });
+      document.addEventListener('touchend', handleTouchEnd);
+    }
+    
+    return () => {
+      // Clean up listeners
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('touchend', handleTouchEnd);
+    };
+  }, [isDragging]);
+  
+  // Handle events on document level
+  const handleMouseMove = (e) => handleDragMove(e.clientX);
+  const handleMouseUp = () => handleDragEnd();
+  const handleTouchMove = (e) => {
+    if (isDragging) {
+      handleDragMove(e.touches[0].clientX);
+      e.preventDefault(); // Prevent scrolling during drag
+    }
+  };
+  const handleTouchEnd = () => handleDragEnd();
   
   // Map columns to CSS classes - ensure all classes are known to Tailwind
   const getGridColsClass = (cols) => {
@@ -36,9 +77,9 @@ const GameGrid = ({
   };
   
   return (
-    <div className="relative mx-auto mb-8">
-      <div className="">
-        <div className={`grid ${getGridColsClass(gridCols)} gap-x-0 gap-y-1`}>
+    <div className="relative mx-12 mb-8 border border-gray-600/50 border-b-2 border-t-2 border-x-2 pt-4 pb-2 px-3 rounded-lg bg-white/5">
+      <div className="border-blue-500">
+        <div className={`grid ${getGridColsClass(gridCols)} gap-x-[1px] gap-y-1`}>
           {grid.map((row, rowIndex) =>
             row.map((box, colIndex) => (
               <GameCell
@@ -51,6 +92,12 @@ const GameGrid = ({
                 matchingBoxes={matchingBoxes}
                 isValidMoveTarget={isValidMoveTarget}
                 onCellClick={onCellClick}
+                // New drag-related props
+                onDragStart={handleDragStart}
+                onDragMove={handleDragMove}
+                onDragEnd={handleDragEnd}
+                isDragging={isDragging}
+                isDraggedBox={dragBox?.row === rowIndex && dragBox?.col === colIndex}
               />
             ))
           )}

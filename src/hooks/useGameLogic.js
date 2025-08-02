@@ -11,7 +11,10 @@ export const useGameLogic = (gameState, animations) => {
     setGrid,
     selectedBox,
     setSelectedBox,
+    moves,
     setMoves,
+    moveLimit,
+    setIsOutOfMoves,
     isAnimating,
     isGravityAnimating
   } = gameState;
@@ -39,7 +42,15 @@ export const useGameLogic = (gameState, animations) => {
     // Update grid immediately for horizontal move
     setGrid(newGrid);
     setSelectedBox(null);
-    setMoves(prev => prev + 1);
+    
+    // Increment moves and check limit
+    const newMoveCount = moves + 1;
+    setMoves(newMoveCount);
+    
+    // Check if out of moves (will be one move ahead)
+    if (newMoveCount >= moveLimit) {
+      setIsOutOfMoves(true);
+    }
     
     // Start gravity animation after brief delay to show horizontal move
     setTimeout(() => {
