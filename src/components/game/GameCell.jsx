@@ -18,12 +18,13 @@ const GameCell = ({
   matchingBoxes, 
   isValidMoveTarget,
   onCellClick,
-  // New drag-related props
+  // Drag-related props
   onDragStart,
   onDragMove,
   onDragEnd,
   isDragging,
-  isDraggedBox
+  isDraggedBox,
+  dragDirection
 }) => {
   // Reference to the cell element for drag manipulation
   const cellRef = useRef(null);
@@ -38,7 +39,7 @@ const GameCell = ({
   // Mouse event handlers for dragging
   const handleMouseDown = (e) => {
     if (box && box.type !== 'blocker') {
-      onDragStart(rowIndex, colIndex, e.clientX, cellRef.current);
+      onDragStart(rowIndex, colIndex, e.clientX);
       e.preventDefault(); // Prevent text selection during drag
     }
   };
@@ -46,7 +47,7 @@ const GameCell = ({
   // Touch event handlers for mobile
   const handleTouchStart = (e) => {
     if (box && box.type !== 'blocker') {
-      onDragStart(rowIndex, colIndex, e.touches[0].clientX, cellRef.current);
+      onDragStart(rowIndex, colIndex, e.touches[0].clientX);
     }
   };
   
@@ -77,7 +78,8 @@ const GameCell = ({
     if (isSelected) {
       return 'ring-4 ring-yellow-400 ring-opacity-80 scale-110 shadow-2xl';
     } else if (isDraggedBox) {
-      return 'dragging'; // CSS class for dragged box
+      // Just add a subtle indicator that this box is being dragged
+      return 'ring-2 ring-white ring-opacity-50';
     } else if (box?.type !== 'blocker' && box !== null) {
       return 'hover:scale-105';
     }
@@ -89,12 +91,8 @@ const GameCell = ({
     return isMatching ? 'animate-bounce scale-125 bg-gradient-to-r from-red-400 to-pink-400' : '';
   };
 
-  // Animation transforms - don't apply to dragged elements (they have their own transforms)
+  // Animation transforms
   const getAnimationStyle = () => {
-    if (isDraggedBox) {
-      return {}; // Let the drag handler manage transform
-    }
-    
     return {
       transform: isFalling 
         ? `translateY(${fallDistance * GRID_CONFIG.TOTAL_CELL_SIZE}px)` 
@@ -147,6 +145,8 @@ const GameCell = ({
         ${getInteractionStyling()}
         ${getMatchStyling()}
         ${isFalling ? 'falling-box' : ''}
+        ${isDraggedBox && dragDirection === 'left' ? 'drag-left' : ''}
+        ${isDraggedBox && dragDirection === 'right' ? 'drag-right' : ''}
       `}
       style={getAnimationStyle()}
       onClick={() => onCellClick(rowIndex, colIndex)}
@@ -159,21 +159,9 @@ const GameCell = ({
     >
       {renderCellContent()}
       
-      {/* Selection glow effect */}
+      {/* Selection glow effect - used for both click selection and drag selection */}
       {isSelected && (
         <div className="absolute inset-0 rounded-lg bg-yellow-400/30 animate-pulse"></div>
-      )}
-      
-      {/* Drag indicators - only show for draggable items */}
-      {box && box.type !== 'blocker' && (
-        <>
-          <div className="drag-indicator-left absolute left-0 top-1/2 -translate-y-1/2 -translate-x-3 text-white opacity-0">
-            ◀
-          </div>
-          <div className="drag-indicator-right absolute right-0 top-1/2 -translate-y-1/2 translate-x-3 text-white opacity-0">
-            ▶
-          </div>
-        </>
       )}
       
       {/* Sparkle effect for matching boxes */}

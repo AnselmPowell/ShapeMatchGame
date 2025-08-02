@@ -29,20 +29,15 @@
 .dragging {
   cursor: grabbing !important;
   z-index: 10;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-  will-change: transform;
 }
 
-.drag-indicator-left,
-.drag-indicator-right {
-  position: absolute;
-  opacity: 0;
-  transition: opacity 0.2s ease;
+/* Direction indicators (kept for visual feedback but simplified) */
+.drag-left {
+  box-shadow: -4px 0 8px rgba(59, 130, 246, 0.5);
 }
 
-.dragging.drag-left .drag-indicator-left,
-.dragging.drag-right .drag-indicator-right {
-  opacity: 0.9;
+.drag-right {
+  box-shadow: 4px 0 8px rgba(59, 130, 246, 0.5);
 }
 
 

@@ -37,13 +37,13 @@ const handleCellClick = (row, col) => {
 ### 2. Drag/Swipe Movement (Additional System)
 
 A touch-friendly drag system that works alongside the click system:
-1. Player presses and holds on a shape
-2. Player drags horizontally to indicate movement direction
-3. Shape follows the finger/mouse with an elastic effect
-4. When released, shape moves if dragged far enough (40% of cell width)
-5. If not dragged far enough or to an invalid position, shape returns to original position
+1. Player presses and holds on a shape, which highlights valid move targets
+2. While still holding, player swipes in the direction they want to move (left or right)
+3. A visual indicator shows which direction is selected
+4. When the player releases their finger/mouse, the move is executed
+5. The move only happens if a valid direction was swiped and the target cell is empty
 
-Both systems use the same underlying moveBox function, ensuring consistent physics and game rules. This dual approach makes the game accessible on both desktop and mobile devices.
+This approach feels natural on mobile devices while maintaining the same visual feedback as the traditional selection system. It uses the same validation rules as the click-based system, ensuring consistent physics and game behavior.
 
 ## Move Limit System
 

@@ -11,7 +11,7 @@ const GameGrid = ({
   matchingBoxes, 
   isValidMoveTarget,
   onCellClick,
-  // New drag handlers prop
+  // Drag handlers prop
   dragHandlers 
 }) => {
   // Get grid dimensions
@@ -21,6 +21,7 @@ const GameGrid = ({
   const { 
     isDragging,
     dragBox,
+    dragDirection,
     handleDragStart,
     handleDragMove,
     handleDragEnd 
@@ -92,12 +93,13 @@ const GameGrid = ({
                 matchingBoxes={matchingBoxes}
                 isValidMoveTarget={isValidMoveTarget}
                 onCellClick={onCellClick}
-                // New drag-related props
+                // Drag-related props
                 onDragStart={handleDragStart}
                 onDragMove={handleDragMove}
                 onDragEnd={handleDragEnd}
                 isDragging={isDragging}
                 isDraggedBox={dragBox?.row === rowIndex && dragBox?.col === colIndex}
+                dragDirection={dragDirection}
               />
             ))
           )}

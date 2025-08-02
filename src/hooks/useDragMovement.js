@@ -2,110 +2,110 @@ import { useState, useRef } from 'react';
 import { GRID_CONFIG } from '../utils/gameConstants';
 
 /**
- * Custom hook for handling drag movement of boxes
- * Adds swipe/drag functionality that works alongside the click-based system
+ * Custom hook for handling drag/swipe movement of boxes
+ * Shows valid moves and executes movement on release
  */
 export const useDragMovement = (gameState, gameLogic) => {
   const { 
     grid, 
+    setSelectedBox,
     isAnimating, 
     isGravityAnimating, 
     isOutOfMoves 
   } = gameState;
   
-  const { moveBox } = gameLogic;
+  const { moveBox, isValidMoveTarget } = gameLogic;
   
   // Drag state
   const [isDragging, setIsDragging] = useState(false);
   const [dragBox, setDragBox] = useState(null);
-  const [dragOffset, setDragOffset] = useState(0);
+  const [dragDirection, setDragDirection] = useState(null); // 'left', 'right', or null
   const startXRef = useRef(0);
-  const boxRef = useRef(null);
+  const currentXRef = useRef(0);
   
-  // Threshold for considering a move (in pixels)
-  const MOVE_THRESHOLD = GRID_CONFIG.CELL_SIZE * 0.4;
+  // Threshold for determining direction (in pixels)
+  const DIRECTION_THRESHOLD = 20;
   
   // Start dragging a box
-  const handleDragStart = (row, col, clientX, boxElement) => {
+  const handleDragStart = (row, col, clientX) => {
     if (isAnimating || isGravityAnimating || isOutOfMoves) return;
     if (grid[row][col] === null || grid[row][col].type === 'blocker') return;
     
+    // Set the selected box to show valid move targets
+    setSelectedBox({ row, col });
+    
     setIsDragging(true);
     setDragBox({ row, col });
-    setDragOffset(0);
+    setDragDirection(null);
     startXRef.current = clientX;
-    boxRef.current = boxElement;
+    currentXRef.current = clientX;
   };
   
-  // Update drag position
+  // Update drag direction based on movement
   const handleDragMove = (clientX) => {
     if (!isDragging || !dragBox) return;
     
-    // Calculate horizontal offset (positive = right, negative = left)
-    const rawOffset = clientX - startXRef.current;
+    currentXRef.current = clientX;
     
-    // Apply elasticity effect - movement gets harder as you pull further
-    const elasticOffset = Math.sign(rawOffset) * Math.min(
-      Math.abs(rawOffset) * 0.8, 
-      GRID_CONFIG.CELL_SIZE * 0.9
-    );
+    // Calculate horizontal movement
+    const deltaX = currentXRef.current - startXRef.current;
     
-    setDragOffset(elasticOffset);
-    
-    // Apply transform to the dragged element
-    if (boxRef.current) {
-      boxRef.current.style.transform = `translateX(${elasticOffset}px) scale(1.05)`;
-      boxRef.current.style.zIndex = '10';
-      boxRef.current.style.transition = 'none';
+    // Determine direction if it exceeds threshold
+    if (Math.abs(deltaX) > DIRECTION_THRESHOLD) {
+      const newDirection = deltaX > 0 ? 'right' : 'left';
+      setDragDirection(newDirection);
+    } else {
+      setDragDirection(null);
     }
   };
   
-  // End dragging and check if it's a valid move
+  // End dragging and execute move if valid
   const handleDragEnd = () => {
-    if (!isDragging || !dragBox) return;
-    
-    const { row, col } = dragBox;
-    let moved = false;
-    
-    // Check if drag exceeded threshold and if destination is valid
-    if (Math.abs(dragOffset) >= MOVE_THRESHOLD) {
-      const direction = dragOffset > 0 ? 1 : -1;
-      const newCol = col + direction;
-      
-      // Validate move using same rules as click movement
-      if (
-        newCol >= 0 && 
-        newCol < GRID_CONFIG.COLS && 
-        grid[row][newCol] === null
-      ) {
-        // Execute move using existing game logic
-        moveBox(row, col, row, newCol);
-        moved = true;
-      }
+    if (!isDragging || !dragBox) {
+      resetDragState();
+      return;
     }
     
-    // If not moved, animate box back to original position
-    if (!moved && boxRef.current) {
-      boxRef.current.style.transform = 'translateX(0) scale(1)';
-      boxRef.current.style.transition = 'transform 0.2s ease-out';
-      boxRef.current.style.zIndex = '1';
+    const { row, col } = dragBox;
+    
+    // Only execute move if we have a valid direction
+    if (dragDirection) {
+      const targetCol = col + (dragDirection === 'right' ? 1 : -1);
+      
+      // Check if the target cell is valid
+      if (
+        targetCol >= 0 && 
+        targetCol < GRID_CONFIG.COLS && 
+        grid[row][targetCol] === null
+      ) {
+        // Execute move
+        moveBox(row, col, row, targetCol);
+      } else {
+        // If not a valid move, just clear selection
+        setSelectedBox(null);
+      }
+    } else {
+      // No direction chosen, treat as a selection (keep selected box)
     }
     
     // Reset drag state
-    setTimeout(() => {
-      setIsDragging(false);
-      setDragBox(null);
-      setDragOffset(0);
-      boxRef.current = null;
-    }, 50);
+    resetDragState();
+  };
+  
+  // Reset all drag-related state
+  const resetDragState = () => {
+    setIsDragging(false);
+    setDragBox(null);
+    setDragDirection(null);
   };
   
   return {
     isDragging,
     dragBox,
-    dragOffset,
+    dragDirection,
     handleDragStart,
     handleDragMove,
-    handleDragEnd
+    handleDragEnd,
+    resetDragState
   };
 };
