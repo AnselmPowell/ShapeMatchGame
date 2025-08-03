@@ -69,6 +69,8 @@ export const useGameState = () => {
   const [moves, setMoves] = useState(0);
   const [moveLimit, setMoveLimit] = useState(LEVEL_MOVE_LIMITS[0]);
   const [isOutOfMoves, setIsOutOfMoves] = useState(false);
+  const [previousGridState, setPreviousGridState] = useState(null);
+  const [hasUsedUndo, setHasUsedUndo] = useState(false);
   
   // Animation state
   const [matchingBoxes, setMatchingBoxes] = useState([]);
@@ -93,7 +95,7 @@ export const useGameState = () => {
       setMoveLimit(LEVEL_MOVE_LIMITS[nextIndex]);
       const newGrid = initializeGrid('custom', nextIndex);
       setGrid(newGrid);
-      resetGameState();
+      resetGameState(); // This now includes resetting undo state
     }
   };
   
@@ -105,6 +107,10 @@ export const useGameState = () => {
     setIsAnimating(false);
     setFallingBoxes([]);
     setIsGravityAnimating(false);
+    
+    // Reset undo state
+    setHasUsedUndo(false);
+    setPreviousGridState(null);
   };
   
   // Reset game to initial state
@@ -112,7 +118,31 @@ export const useGameState = () => {
     const newGrid = initializeGrid(boardMode, currentBoardIndex);
     setGrid(newGrid);
     setMoveLimit(LEVEL_MOVE_LIMITS[currentBoardIndex]);
-    resetGameState();
+    resetGameState(); // This now includes resetting undo state
+  };
+  
+  // Undo the last move
+  const undoLastMove = () => {
+    // Check if undo is available
+    if (hasUsedUndo || !previousGridState || isAnimating || isGravityAnimating) {
+      return;
+    }
+
+    // Restore previous grid state
+    setGrid(previousGridState);
+    
+    // Decrement move counter
+    setMoves(prevMoves => Math.max(0, prevMoves - 1));
+    
+    // Mark undo as used
+    setHasUsedUndo(true);
+    
+    // Clear selection if any
+    setSelectedBox(null);
+    
+    // Reset animation states to be safe
+    setMatchingBoxes([]);
+    setFallingBoxes([]);
   };
   
   return {
@@ -126,6 +156,10 @@ export const useGameState = () => {
     moveLimit,
     isOutOfMoves,
     setIsOutOfMoves,
+    previousGridState,
+    setPreviousGridState,
+    hasUsedUndo,
+    setHasUsedUndo,
     
     // Animation state
     matchingBoxes,
@@ -145,6 +179,7 @@ export const useGameState = () => {
     // Actions
     resetGame,
     toggleBoardMode,
-    nextBoard
+    nextBoard,
+    undoLastMove
   };
 };

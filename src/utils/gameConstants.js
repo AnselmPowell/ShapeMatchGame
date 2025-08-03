@@ -206,17 +206,30 @@ export const CUSTOM_BOARDS = [
     ["X", "X", "X", "X", '★', "X", "X", '▲', "X", "X", '▲', "X", null, null],
     ["X", "X", "X", "X", "X", null, "X", "X", null, "X", "X", null, null, null]
   ],
-  [
-  ['▲', null, null, null, null, null, null, null, "X", '★', null],
+[
+  [null, null, '■', null, '★', null, '★', null, null, null],
+  [null, null, "X", null, "X", null, "X", null, null, null],
+  [null, null, null, null, null, null, '♦', '●', null, null],
+  ['▲', null, null, null, null, null, "X", "X", "X", "X"],
+  ["X", null, null, null, "X", '♠', null, '♦', null, null],
+  ['●', '■', null, null, "X", "X", '★', "X", "X", null],
+  ["X", "X", "X", null, null, null, "X", null, null, '▲'],
+  [null, null, "X", "X", null, null, null, null, "X", "X"],
+  ['★', null, null, '♦', null, null, null, "X", "X", null],
+  ["X", "X", "X", '♠', "X", "X", '●', "X", null, null]
+],
+[
+  ['▲', null, null, null, null, null, '●', null, "X", '★', null],
   ["X", "X", "X", null, null, null, '▲', "X", "X", "X", null],
   [null, null, null, null, "X", null, '●', null, null, null, null],
-  [null, null, '★', '●', null, null, "X", null, '★', "X", null],
+  [null, null, '★', null, null, null, "X", null, '★', "X", null],
   [null, null, "X", "X", "X", null, null, null, "X", null, null],
   [null, null, null, null, "X", null, null, null, null, null, null],
   [null, null, null, null, null, null, null, null, null, null, null],
-  [null, null, '■', null, null, '■', null, null, null, null, null],
-  ["X", '●', "X", "X", "X", "X", '▲', '●', "X", "X", null]
-],
+  [null, null, '■', null, '■', null, null, null, null, null, null],
+  ["X", '●', "X", "X", "X", '▲', '●', "X", "X", "X", null]
+]
+
 ];
 
 // Animation timing constants
@@ -258,7 +271,8 @@ export const LEVEL_MOVE_LIMITS = [
   50, // Level 15 
   20, // Level 16 
   55, // Level 17
-  60  // Level 18
+  60,  // Level 18
+  50, // Level 19
 ];
 
 // Direction vectors for adjacent checking

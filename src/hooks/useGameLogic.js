@@ -15,6 +15,7 @@ export const useGameLogic = (gameState, animations) => {
     setMoves,
     moveLimit,
     setIsOutOfMoves,
+    setPreviousGridState,
     isAnimating,
     isGravityAnimating
   } = gameState;
@@ -39,6 +40,9 @@ export const useGameLogic = (gameState, animations) => {
     }
 
     console.log(`Moving box from (${fromRow},${fromCol}) to (${toRow},${toCol})`);
+
+    // Save current grid state before making the move
+    setPreviousGridState(cloneGrid(grid));
 
     // Move box horizontally
     const newGrid = cloneGrid(grid);

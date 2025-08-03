@@ -19,6 +19,7 @@
 - Game statistics display with move limits
 - Victory modal for successful completion
 - Failure modal for when out of moves
+- Undo button with availability state
 - Reset and board selection controls
 - Background particles effect
 
@@ -38,6 +39,7 @@
 - Game state management
 - Multiple board layouts
 - Move limit system with failure condition
+- Undo functionality with one-time use per level
 
 ✅ **Technical Architecture**
 - Modular component structure

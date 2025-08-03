@@ -1,10 +1,13 @@
 import React from 'react';
+import UndoButton from './UndoButton';
 
 /**
  * Game controls and instructions component
  */
 const GameControls = ({ 
   onResetGame, 
+  onUndo,
+  canUndo,
   boardMode, 
   currentBoardIndex, 
   totalBoards, 
@@ -14,7 +17,7 @@ const GameControls = ({
   return (
     <div className="text-center">
       {/* Board Mode Controls */}
-      <div className="flex justify-center gap-4 mb-6">
+      <div className="flex justify-center gap-4 mb-6 flex-wrap">
         {/* Mode Toggle Button */}
         <button
           onClick={onToggleBoardMode}
@@ -36,6 +39,9 @@ const GameControls = ({
             ⏭️ Next Level
           </button>
         )}
+
+        {/* Undo Button */}
+        <UndoButton onUndo={onUndo} isAvailable={canUndo} />
 
         {/* New Game Button */}
         <button
@@ -70,6 +76,9 @@ const GameControls = ({
           <span className="text-yellow-400 font-semibold">✨ How to play:</span> Click a colored box to select it, 
           then click an adjacent LEFT or RIGHT space to move it. Gravity pulls all boxes down! When two boxes with the same shape 
           touch, they vanish in a burst of magic! Navigate around the gray blocker boxes - they can't be moved. Clear all colored boxes to win!
+        </p>
+        <p className="text-gray-300 text-sm mt-2">
+          <span className="text-blue-400 font-semibold">↩️ Undo:</span> You can undo your last move once per level. Complete a level or restart to regain your undo ability.
         </p>
       </div>
     </div>

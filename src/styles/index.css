@@ -33,11 +33,11 @@
 
 /* Direction indicators (kept for visual feedback but simplified) */
 .drag-left {
-  box-shadow: -4px 0 8px rgba(59, 130, 246, 0.5);
+  box-shadow: -10px 0 8px rgba(56, 241, 127, 0.7);
 }
 
 .drag-right {
-  box-shadow: 4px 0 8px rgba(59, 130, 246, 0.5);
+  box-shadow: 10px 0 8px rgba(56, 241, 127, 0.7);
 }
 
 

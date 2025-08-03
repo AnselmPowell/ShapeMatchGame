@@ -39,12 +39,15 @@ const ShapeMatchGame = () => {
     isAnimating,
     isGravityAnimating,
     isOutOfMoves,
+    previousGridState,
+    hasUsedUndo,
     boardMode,
     currentBoardIndex,
     totalBoards,
     resetGame,
     toggleBoardMode,
-    nextBoard
+    nextBoard,
+    undoLastMove
   } = gameState;
   
   const {
@@ -86,6 +89,9 @@ const ShapeMatchGame = () => {
   // Calculate remaining boxes for victory condition
   const remainingBoxes = getRemainingBoxes();
   const isVictory = remainingBoxes === 0;
+  
+  // Calculate if undo is available
+  const canUndo = !hasUsedUndo && previousGridState !== null && !isAnimating && !isOutOfMoves;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-900 flex flex-col items-center justify-center p-4 relative overflow-hidden">
@@ -123,6 +129,8 @@ const ShapeMatchGame = () => {
         {/* Controls */}
         <GameControls 
           onResetGame={resetGame}
+          onUndo={undoLastMove}
+          canUndo={canUndo}
           boardMode={boardMode}
           currentBoardIndex={currentBoardIndex}
           totalBoards={totalBoards}
