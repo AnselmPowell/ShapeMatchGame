@@ -25,9 +25,16 @@ export const useGameLogic = (gameState, animations) => {
    * Execute box movement
    */
   const moveBox = (fromRow, fromCol, toRow, toCol) => {
-    if (!isValidMove(grid, fromRow, fromCol, toRow, toCol) || 
-        isAnimating || 
-        isGravityAnimating) {
+    console.log(`moveBox called with: fromRow=${fromRow}, fromCol=${fromCol}, toRow=${toRow}, toCol=${toCol}`);
+    console.log("Animation state:", isAnimating, isGravityAnimating);
+    
+    if (!isValidMove(grid, fromRow, fromCol, toRow, toCol)) {
+      console.log("Invalid move - failed isValidMove check");
+      return;
+    }
+    
+    if (isAnimating || isGravityAnimating) {
+      console.log("Can't move - animations in progress");
       return;
     }
 
@@ -46,14 +53,18 @@ export const useGameLogic = (gameState, animations) => {
     // Increment moves and check limit
     const newMoveCount = moves + 1;
     setMoves(newMoveCount);
+    console.log(`Moves updated: ${moves} -> ${newMoveCount}`);
     
     // Check if out of moves (will be one move ahead)
     if (newMoveCount >= moveLimit) {
       setIsOutOfMoves(true);
+      console.log("Out of moves!");
     }
     
     // Start gravity animation after brief delay to show horizontal move
+    console.log("Setting timeout for gravity animation");
     setTimeout(() => {
+      console.log("Starting gravity animation");
       animateGravity(newGrid);
     }, ANIMATION_CONFIG.HORIZONTAL_DELAY);
   };

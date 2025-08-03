@@ -29,33 +29,49 @@ const GameGrid = ({
   
   // Add global mouse/touch event listeners to track drag outside the grid
   useEffect(() => {
-    if (isDragging) {
-      // Add global event listeners
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-      document.addEventListener('touchmove', handleTouchMove, { passive: false });
-      document.addEventListener('touchend', handleTouchEnd);
+    if (isDragging && handleDragMove && handleDragEnd) {
+      console.log("Setting up global event listeners for drag");
+      
+      // Define handlers within the effect to ensure proper references
+      const mouseMoveHandler = (e) => {
+        console.log("Global mouse move");
+        handleDragMove(e.clientX);
+      };
+      
+      const mouseUpHandler = () => {
+        console.log("Global mouse up - ending drag");
+        handleDragEnd();
+      };
+      
+      const touchMoveHandler = (e) => {
+        console.log("Global touch move");
+        if (isDragging) {
+          handleDragMove(e.touches[0].clientX);
+          e.preventDefault(); // Prevent scrolling during drag
+        }
+      };
+      
+      const touchEndHandler = () => {
+        console.log("Global touch end - ending drag");
+        handleDragEnd();
+      };
+      
+      // Add event listeners
+      document.addEventListener('mousemove', mouseMoveHandler);
+      document.addEventListener('mouseup', mouseUpHandler);
+      document.addEventListener('touchmove', touchMoveHandler, { passive: false });
+      document.addEventListener('touchend', touchEndHandler);
+      
+      // Clean up
+      return () => {
+        console.log("Removing global event listeners");
+        document.removeEventListener('mousemove', mouseMoveHandler);
+        document.removeEventListener('mouseup', mouseUpHandler);
+        document.removeEventListener('touchmove', touchMoveHandler);
+        document.removeEventListener('touchend', touchEndHandler);
+      };
     }
-    
-    return () => {
-      // Clean up listeners
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-      document.removeEventListener('touchmove', handleTouchMove);
-      document.removeEventListener('touchend', handleTouchEnd);
-    };
-  }, [isDragging]);
-  
-  // Handle events on document level
-  const handleMouseMove = (e) => handleDragMove(e.clientX);
-  const handleMouseUp = () => handleDragEnd();
-  const handleTouchMove = (e) => {
-    if (isDragging) {
-      handleDragMove(e.touches[0].clientX);
-      e.preventDefault(); // Prevent scrolling during drag
-    }
-  };
-  const handleTouchEnd = () => handleDragEnd();
+  }, [isDragging, handleDragMove, handleDragEnd]);
   
   // Map columns to CSS classes - ensure all classes are known to Tailwind
   const getGridColsClass = (cols) => {
@@ -77,6 +93,7 @@ const GameGrid = ({
     return colsMap[cols] || 'grid-cols-12'; // fallback
   };
   
+  // Ensure we pass all the drag handler props correctly to each cell
   return (
     <div className="relative mx-12 mb-8 border border-gray-600/50 border-b-2 border-t-2 border-x-2 pt-4 pb-2 px-3 rounded-lg bg-white/5">
       <div className="border-blue-500">
@@ -93,13 +110,13 @@ const GameGrid = ({
                 matchingBoxes={matchingBoxes}
                 isValidMoveTarget={isValidMoveTarget}
                 onCellClick={onCellClick}
-                // Drag-related props
-                onDragStart={handleDragStart}
-                onDragMove={handleDragMove}
-                onDragEnd={handleDragEnd}
-                isDragging={isDragging}
-                isDraggedBox={dragBox?.row === rowIndex && dragBox?.col === colIndex}
-                dragDirection={dragDirection}
+                // Drag-related props - ensure these are all defined
+                onDragStart={handleDragStart || (() => {})}
+                onDragMove={handleDragMove || (() => {})}
+                onDragEnd={handleDragEnd || (() => {})}
+                isDragging={isDragging || false}
+                isDraggedBox={(dragBox?.row === rowIndex && dragBox?.col === colIndex) || false}
+                dragDirection={dragDirection || null}
               />
             ))
           )}

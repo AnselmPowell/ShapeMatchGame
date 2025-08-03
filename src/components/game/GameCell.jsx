@@ -39,6 +39,7 @@ const GameCell = ({
   // Mouse event handlers for dragging
   const handleMouseDown = (e) => {
     if (box && box.type !== 'blocker') {
+      console.log("Mouse down on cell", rowIndex, colIndex);
       onDragStart(rowIndex, colIndex, e.clientX);
       e.preventDefault(); // Prevent text selection during drag
     }
@@ -47,11 +48,13 @@ const GameCell = ({
   // Touch event handlers for mobile
   const handleTouchStart = (e) => {
     if (box && box.type !== 'blocker') {
+      console.log("Touch start on cell", rowIndex, colIndex);
       onDragStart(rowIndex, colIndex, e.touches[0].clientX);
     }
   };
   
   const handleTouchMove = (e) => {
+    console.log("Touch move on cell");
     onDragMove(e.touches[0].clientX);
     
     // Prevent scrolling while dragging
@@ -153,7 +156,10 @@ const GameCell = ({
       onMouseDown={handleMouseDown}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
-      onTouchEnd={onDragEnd}
+      onTouchEnd={() => {
+        console.log("Touch end on cell - calling onDragEnd");
+        onDragEnd();
+      }}
       data-row={rowIndex}
       data-col={colIndex}
     >

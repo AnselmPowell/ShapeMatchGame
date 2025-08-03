@@ -18,6 +18,7 @@ The Shape Match Game is currently in a completed state with all core functionali
 - Added visual feedback for remaining moves
 - Created failure modal for when players run out of moves
 - Added drag/swipe movement system for better mobile experience
+- Fixed and optimized drag functionality with direction-based visual feedback
 
 ## Next Steps
 

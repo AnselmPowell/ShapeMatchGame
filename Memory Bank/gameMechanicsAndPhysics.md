@@ -39,11 +39,17 @@ const handleCellClick = (row, col) => {
 A touch-friendly drag system that works alongside the click system:
 1. Player presses and holds on a shape, which highlights valid move targets
 2. While still holding, player swipes in the direction they want to move (left or right)
-3. A visual indicator shows which direction is selected
+3. A visual indicator (blue glow) shows which direction is selected
 4. When the player releases their finger/mouse, the move is executed
 5. The move only happens if a valid direction was swiped and the target cell is empty
 
 This approach feels natural on mobile devices while maintaining the same visual feedback as the traditional selection system. It uses the same validation rules as the click-based system, ensuring consistent physics and game behavior.
+
+#### Implementation Details
+- Direction is determined when swipe exceeds a 20px threshold
+- Uses the same `moveBox` function as click-based movement
+- Event listeners track swipe motion even if the finger/mouse moves outside the original cell
+- Blue directional glow provides immediate visual feedback about which way the shape will move
 
 ## Move Limit System
 
