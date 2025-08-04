@@ -8,7 +8,7 @@ The game provides two complementary ways to move shapes:
 
 The traditional select-and-move system:
 1. Player clicks on a shape to select it (gets highlighted with yellow border)
-2. Player clicks on an adjacent empty cell in the same row to move the shape
+2. Player clicks on an adjacent empty cell or portal in the same row to move the shape
 3. The shape moves to the new position if the move is valid
 4. The selection is cleared after movement
 
@@ -27,8 +27,18 @@ const handleCellClick = (row, col) => {
         moveBox(selectedBox.row, selectedBox.col, row, col);
       }
     }
-  } else if (grid[row][col].type !== 'blocker') {
-    // Select a moveable box
+  } else if (grid[row][col].type === 'portal') {
+    if (selectedBox) {
+      // Check if the portal is a valid move target for the selected box
+      const isSameRow = row === selectedBox.row;
+      const isAdjacent = Math.abs(col - selectedBox.col) === 1;
+      
+      if (isSameRow && isAdjacent) {
+        moveBox(selectedBox.row, selectedBox.col, row, col);
+      }
+    }
+  } else if (grid[row][col].type !== 'blocker' && grid[row][col].type !== 'portal') {
+    // Only allow selection of moveable boxes, not blockers or portals
     setSelectedBox({ row, col });
   }
 };
@@ -41,7 +51,7 @@ A touch-friendly drag system that works alongside the click system:
 2. While still holding, player swipes in the direction they want to move (left or right)
 3. A visual indicator (blue glow) shows which direction is selected
 4. When the player releases their finger/mouse, the move is executed
-5. The move only happens if a valid direction was swiped and the target cell is empty
+5. The move only happens if a valid direction was swiped and the target cell is empty or a portal
 
 This approach feels natural on mobile devices while maintaining the same visual feedback as the traditional selection system. It uses the same validation rules as the click-based system, ensuring consistent physics and game behavior.
 
@@ -82,6 +92,48 @@ export const LEVEL_MOVE_LIMITS = [
    - Checks for reaching the limit occur after each move
    - State is synchronized to prevent moves after the limit is reached
 
+## Portal System
+
+The game features a teleportation mechanic using paired portals that allow boxes to travel across the board:
+
+### Portal Mechanics
+
+1. **Portal Pairs**:
+   - Portals exist in pairs with matching identifiers (p1-p1, p2-p2, etc.)
+   - Each pair acts as an entrance/exit system allowing boxes to teleport
+   - Portals are fixed in place (not affected by gravity)
+
+2. **Teleportation Process**:
+   - When a box moves horizontally into a portal, it teleports to the paired portal location
+   - After teleportation, both portals in the pair disappear
+   - Each portal pair can only be used once per level
+
+3. **Visual Feedback**:
+   - Multi-phase animation shows the box entering one portal and exiting through another
+   - Portal colors indicate which portals are paired (p1, p2, etc.)
+   - Swirling effect and glow provide visual cues during teleportation
+
+4. **Implementation Details**:
+   ```javascript
+   // Portal data structure
+   {
+     type: 'portal',
+     portalId: 'p1', // or 'p2', etc.
+     id: uniqueId()
+   }
+   ```
+
+5. **Animation Sequence**:
+   - **Phase 1 (300ms)**: Box enters the source portal (shrinks/fades)
+   - **Phase 2 (200ms)**: Portal connection animation (both portals glow)
+   - **Phase 3 (300ms)**: Box exits from destination portal (grows/appears)
+   - **Phase 4**: Portals disappear, gravity is applied
+
+6. **Strategic Element**:
+   - Portals create shortcuts across the board
+   - Their one-time use creates strategic decisions about which box to teleport
+   - Can help reach isolated areas or create match opportunities
+
 ## Core Physics System
 
 ### Gravity System
@@ -96,8 +148,8 @@ function applyGravity(grid) {
   // Process bottom-to-top and left-to-right
   for (let row = GRID_CONFIG.ROWS - 2; row >= 0; row--) {
     for (let col = 0; col < GRID_CONFIG.COLS; col++) {
-      // Skip empty cells and blockers
-      if (!grid[row][col] || grid[row][col].type === 'blocker') continue;
+      // Skip empty cells, blockers, and portals
+      if (!grid[row][col] || grid[row][col].type === 'blocker' || grid[row][col].type === 'portal') continue;
       
       // Check if space below is empty
       if (grid[row + 1][col] === null) {
@@ -125,8 +177,8 @@ function applyGravity(grid) {
    - Each iteration processes cells from bottom-to-top to prevent "teleporting" through multiple spaces
 
 2. **Collision Detection**:
-   - Shapes stop falling when they encounter another shape or blocker
-   - Blockers act as immovable obstacles
+   - Shapes stop falling when they encounter another shape, blocker, or portal
+   - Blockers and portals act as immovable obstacles
    - Collision is detected before movement occurs
 
 3. **Coordinated Animation**:
@@ -146,8 +198,8 @@ function findMatches(grid) {
   // Process each cell
   for (let row = 0; row < GRID_CONFIG.ROWS; row++) {
     for (let col = 0; col < GRID_CONFIG.COLS; col++) {
-      // Skip empty cells and blockers
-      if (!grid[row][col] || grid[row][col].type === 'blocker') continue;
+      // Skip empty cells, blockers, and portals
+      if (!grid[row][col] || grid[row][col].type === 'blocker' || grid[row][col].type === 'portal') continue;
       
       const symbol = grid[row][col].symbol;
       
@@ -212,14 +264,14 @@ if (isSameRow && isAdjacent) {
 ### Key Movement Principles
 
 1. **Selection System**:
-   - Click to select a movable shape (not blockers)
+   - Click to select a movable shape (not blockers or portals)
    - Selected shape gets highlighted
    - Clicking another shape changes selection
 
 2. **Movement Validation**:
    - Must be same row (horizontal only)
    - Must be adjacent (no teleporting)
-   - Destination must be empty
+   - Destination must be empty or a portal
 
 3. **Movement Animation**:
    - Smooth transition using CSS transforms
@@ -300,7 +352,7 @@ function getRemainingBoxes() {
   
   for (let row = 0; row < GRID_CONFIG.ROWS; row++) {
     for (let col = 0; col < GRID_CONFIG.COLS; col++) {
-      if (grid[row][col] && grid[row][col].type !== 'blocker') {
+      if (grid[row][col] && grid[row][col].type !== 'blocker' && grid[row][col].type !== 'portal') {
         count++;
       }
     }
@@ -322,5 +374,9 @@ The game uses a sophisticated timing system to create realistic physics feel:
 | Cascade Delay | 200ms | CASCADE_DELAY |
 | Gravity Buffer | 200ms | GRAVITY_BUFFER |
 | Settle Delay | 100ms | SETTLE_DELAY |
+| Portal Enter | 300ms | PORTAL_ENTER_DURATION |
+| Portal Connection | 200ms | PORTAL_CONNECTION_DURATION |
+| Portal Exit | 300ms | PORTAL_EXIT_DURATION |
+| Total Teleport | 800ms | TELEPORT_DURATION |
 
 These timings are carefully calibrated to create a natural feel while maintaining responsive gameplay.
