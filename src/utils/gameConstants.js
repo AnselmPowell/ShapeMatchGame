@@ -41,8 +41,8 @@ export const CUSTOM_BOARDS = [
     [null, null, null, null, null, null, null, null, null],
     [null, null, null, null, null, null, null, null, null],
     [null, null, null, null, "X", null, null, "p2", null],
-    [null, null, null, null, "X", null, null, null, null],
-    ["p2", "p1", null, '■', "X", null, '■', null, "p1"]
+    [null, '♦', null, '★', "X", null, null, '★', null],
+    ["p2", "p1", null, '■', "X", null, '■', '♦', "p1"]
   ],
 
   [

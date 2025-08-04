@@ -105,6 +105,7 @@ The game features a teleportation mechanic using paired portals that allow boxes
 
 2. **Teleportation Process**:
    - When a box moves horizontally into a portal, it teleports to the paired portal location
+   - When a box falls vertically onto a portal due to gravity, it also teleports
    - After teleportation, both portals in the pair disappear
    - Each portal pair can only be used once per level
 
@@ -133,6 +134,7 @@ The game features a teleportation mechanic using paired portals that allow boxes
    - Portals create shortcuts across the board
    - Their one-time use creates strategic decisions about which box to teleport
    - Can help reach isolated areas or create match opportunities
+   - Vertical and horizontal entry points provide multiple ways to use portals
 
 ## Core Physics System
 

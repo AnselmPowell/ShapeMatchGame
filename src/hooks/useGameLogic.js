@@ -185,7 +185,7 @@ export const useGameLogic = (gameState, animations) => {
         console.log("Out of moves!");
       }
       
-      // Start gravity animation after brief delay
+      // Apply gravity
       console.log("Setting timeout for gravity animation");
       setTimeout(() => {
         console.log("Starting gravity animation");

@@ -5,9 +5,12 @@ import {
 import { 
   applyGravity, 
   findAllMatches, 
-  removeMatches 
+  removeMatches,
+  findPairedPortal,
+  removePortalPair
 } from '../utils/gameLogicUtils';
 import { ANIMATION_CONFIG } from '../utils/gameConstants';
+import { cloneGrid } from '../utils/gridUtils';
 
 /**
  * Animation orchestration hook
@@ -18,7 +21,13 @@ export const useGameAnimations = (gameState) => {
     setFallingBoxes,
     setIsGravityAnimating,
     setMatchingBoxes,
-    setIsAnimating
+    setIsAnimating,
+    setIsTeleporting,
+    setTeleportingBoxes,
+    setPortalEnterAnimation,
+    setPortalConnectAnimation,
+    setPortalExitAnimation,
+    setActivePortals
   } = gameState;
 
   /**
@@ -39,22 +48,121 @@ export const useGameAnimations = (gameState) => {
     setFallingBoxes(fallPaths);
     setIsGravityAnimating(true);
     
-    // Calculate final grid state
-    const finalGrid = applyGravity(currentGrid);
+    // Calculate final grid state with possible portal entries
+    const gravityResult = applyGravity(currentGrid);
+    const finalGrid = gravityResult.grid;
+    const portalEntries = gravityResult.portalEntries || [];
     
-    // Wait for animation to complete, then update grid
-    const animationDuration = calculateAnimationDuration(fallPaths);
-    
-    setTimeout(() => {
-      setGrid(finalGrid);
-      setFallingBoxes([]);
-      setIsGravityAnimating(false);
+    // Handle any boxes that fell onto portals
+    if (portalEntries.length > 0) {
+      console.log(`${portalEntries.length} boxes fell onto portals`);
       
-      // Start match checking after gravity settles
-      setTimeout(() => cascadeMatches(finalGrid), ANIMATION_CONFIG.SETTLE_DELAY);
-    }, animationDuration);
+      // Wait for animation to complete, then handle portal entries
+      const animationDuration = calculateAnimationDuration(fallPaths);
+      
+      setTimeout(() => {
+        setGrid(finalGrid);
+        setFallingBoxes([]);
+        setIsGravityAnimating(false);
+        
+        // Process portal entries one at a time (in case there are multiple)
+        processNextPortalEntry(finalGrid, portalEntries, 0);
+      }, animationDuration);
+    } else {
+      // No portal entries, proceed with normal gravity animation
+      const animationDuration = calculateAnimationDuration(fallPaths);
+      
+      setTimeout(() => {
+        setGrid(finalGrid);
+        setFallingBoxes([]);
+        setIsGravityAnimating(false);
+        
+        // Start match checking after gravity settles
+        setTimeout(() => cascadeMatches(finalGrid), ANIMATION_CONFIG.SETTLE_DELAY);
+      }, animationDuration);
+    }
     
     return currentGrid;
+  };
+  
+  /**
+   * Process boxes that have landed on portals
+   */
+  const processNextPortalEntry = (grid, portalEntries, index) => {
+    // If we've processed all entries, continue with cascade matches
+    if (index >= portalEntries.length) {
+      setTimeout(() => cascadeMatches(grid), ANIMATION_CONFIG.SETTLE_DELAY);
+      return;
+    }
+    
+    const entry = portalEntries[index];
+    const newGrid = cloneGrid(grid);
+    
+    // Find the paired portal
+    const pairedPortal = findPairedPortal(newGrid, entry.portalId, entry.portalRow, entry.portalCol);
+    
+    if (pairedPortal) {
+      console.log(`Box fell onto portal ${entry.portalId} at (${entry.portalRow},${entry.portalCol})`);
+      console.log(`Found paired portal at (${pairedPortal.row},${pairedPortal.col})`);
+      
+      // Mark source and destination portals as active
+      setActivePortals([
+        { row: entry.portalRow, col: entry.portalCol, portalId: entry.portalId },
+        { row: pairedPortal.row, col: pairedPortal.col, portalId: entry.portalId }
+      ]);
+      
+      // Set up teleportation data
+      setTeleportingBoxes([{
+        fromRow: entry.fromRow,
+        fromCol: entry.fromCol,
+        enterRow: entry.portalRow, 
+        enterCol: entry.portalCol,
+        exitRow: pairedPortal.row, 
+        exitCol: pairedPortal.col,
+        portalId: entry.portalId
+      }]);
+      
+      // PHASE 1: Box enters portal animation
+      setIsTeleporting(true);
+      setPortalEnterAnimation(true);
+      
+      setTimeout(() => {
+        // PHASE 2: Portal connection animation
+        setPortalEnterAnimation(false);
+        setPortalConnectAnimation(true);
+        
+        setTimeout(() => {
+          // PHASE 3: Box exits from destination portal
+          setPortalConnectAnimation(false);
+          setPortalExitAnimation(true);
+          
+          // Move the box to the destination portal
+          newGrid[pairedPortal.row][pairedPortal.col] = entry.box;
+          setGrid(newGrid);
+          
+          setTimeout(() => {
+            // PHASE 4: Animation complete, remove portals
+            setPortalExitAnimation(false);
+            
+            // Remove the portals from the grid
+            const portalClearedGrid = cloneGrid(newGrid);
+            removePortalPair(portalClearedGrid, entry.portalId);
+            setGrid(portalClearedGrid);
+            
+            // Reset animation states
+            setIsTeleporting(false);
+            setTeleportingBoxes([]);
+            setActivePortals([]);
+            
+            // Process the next portal entry if any
+            processNextPortalEntry(portalClearedGrid, portalEntries, index + 1);
+          }, ANIMATION_CONFIG.PORTAL_EXIT_DURATION);
+        }, ANIMATION_CONFIG.PORTAL_CONNECTION_DURATION);
+      }, ANIMATION_CONFIG.PORTAL_ENTER_DURATION);
+    } else {
+      // If no paired portal found, just continue with the next entry
+      processNextPortalEntry(newGrid, portalEntries, index + 1);
+    }
   };
 
   /**

@@ -13,6 +13,7 @@ export const applyGravity = (inputGrid) => {
   const newGrid = cloneGrid(inputGrid);
   let changed = true;
   let iterations = 0;
+  let portalEntries = [];
   
   // Get actual grid dimensions instead of using GRID_CONFIG
   const gridRows = inputGrid.length;
@@ -27,7 +28,6 @@ export const applyGravity = (inputGrid) => {
       for (let row = gridRows - 2; row >= 0; row--) {
         const currentBox = newGrid[row][col];
         
-        
         // Only process moveable boxes (not blockers or portals)
         if (isMoveableBox(currentBox)) {
           const spaceBelow = newGrid[row + 1][col];
@@ -38,12 +38,29 @@ export const applyGravity = (inputGrid) => {
             newGrid[row][col] = null;
             changed = true;
           }
+          // If space below is a portal, record it for portal entry
+          else if (spaceBelow && spaceBelow.type === 'portal') {
+            portalEntries.push({
+              box: currentBox,
+              fromRow: row,
+              fromCol: col,
+              portalRow: row + 1,
+              portalCol: col,
+              portalId: spaceBelow.portalId
+            });
+            // Remove the box from its original position - portal handling will be done separately
+            newGrid[row][col] = null;
+            changed = true;
+          }
         }
       }
     }
   }
   
-  return newGrid;
+  return {
+    grid: newGrid,
+    portalEntries // Return info about boxes that landed on portals
+  };
 };
 
 /**
