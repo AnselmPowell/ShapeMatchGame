@@ -12,7 +12,9 @@ const GameGrid = ({
   isValidMoveTarget,
   onCellClick,
   // Drag handlers prop
-  dragHandlers 
+  dragHandlers,
+  // Game state for animations
+  gameState
 }) => {
   // Get grid dimensions
   const gridCols = grid[0]?.length || 0;
@@ -117,6 +119,12 @@ const GameGrid = ({
                 isDragging={isDragging || false}
                 isDraggedBox={(dragBox?.row === rowIndex && dragBox?.col === colIndex) || false}
                 dragDirection={dragDirection || null}
+                // Portal animation props
+                teleportingBoxes={gameState?.teleportingBoxes || []}
+                portalEnterAnimation={gameState?.portalEnterAnimation || false}
+                portalConnectAnimation={gameState?.portalConnectAnimation || false}
+                portalExitAnimation={gameState?.portalExitAnimation || false}
+                activePortals={gameState?.activePortals || []}
               />
             ))
           )}

@@ -145,7 +145,8 @@ const ShapeMatchGame = () => {
           matchingBoxes={matchingBoxes}
           isValidMoveTarget={isValidMoveTarget}
           onCellClick={handleCellClick}
-          dragHandlers={dragHandlers} // Pass drag handlers to grid
+          dragHandlers={dragHandlers}
+          gameState={gameState} // Pass the entire gameState for animation props
         />
 
         {/* Controls */}

@@ -2,9 +2,11 @@ import React, { useRef } from 'react';
 import { 
   isCellFalling, 
   getCellFallDistance, 
-  isCellMatching 
+  isCellMatching,
+  isTeleportingBox,
+  isTeleportingPortal
 } from '../../utils/animationUtils';
-import { GRID_CONFIG, PORTAL_COLORS } from '../../utils/gameConstants';
+import { GRID_CONFIG, PORTAL_COLORS, ANIMATION_CONFIG } from '../../utils/gameConstants';
 
 /**
  * Individual game cell component with animations and interactions
@@ -24,7 +26,13 @@ const GameCell = ({
   onDragEnd,
   isDragging,
   isDraggedBox,
-  dragDirection
+  dragDirection,
+  // Portal animation props
+  teleportingBoxes = [],
+  portalEnterAnimation = false,
+  portalConnectAnimation = false,
+  portalExitAnimation = false,
+  activePortals = []
 }) => {
   // Reference to the cell element for drag manipulation
   const cellRef = useRef(null);
@@ -35,6 +43,15 @@ const GameCell = ({
   const isMatching = isCellMatching(matchingBoxes, rowIndex, colIndex);
   const isSelected = selectedBox && selectedBox.row === rowIndex && selectedBox.col === colIndex;
   const isValidTarget = isValidMoveTarget(rowIndex, colIndex);
+  
+  // Portal animation states
+  const isTeleportEnter = isTeleportingBox(teleportingBoxes, 'enter', rowIndex, colIndex);
+  const isTeleportExit = isTeleportingBox(teleportingBoxes, 'exit', rowIndex, colIndex);
+  const isActivePortal = isTeleportingPortal(activePortals, rowIndex, colIndex);
+  const portalPhase = 
+    (isActivePortal && portalEnterAnimation) ? 'enter' : 
+    (isActivePortal && portalConnectAnimation) ? 'connect' : 
+    (isActivePortal && portalExitAnimation) ? 'exit' : null;
 
   // Mouse event handlers for dragging
   const handleMouseDown = (e) => {
@@ -63,6 +80,32 @@ const GameCell = ({
     }
   };
 
+  // Get portal styling based on animation state
+  const getPortalStyling = () => {
+    if (!box || box.type !== 'portal') return '';
+    
+    const portalColor = PORTAL_COLORS[box.portalId] || 'bg-blue-500';
+    
+    // Active portal animation states
+    if (isActivePortal) {
+      if (portalEnterAnimation) {
+        return `${portalColor} border-4 border-white/70 shadow-lg shadow-white/50 scale-110 animate-pulse`;
+      }
+      if (portalConnectAnimation) {
+        return `${portalColor} border-4 border-white scale-125 shadow-lg shadow-white/80 animate-ping`;
+      }
+      if (portalExitAnimation) {
+        return `${portalColor} border-4 border-white/70 shadow-lg shadow-white/50 scale-110 animate-pulse`;
+      }
+    }
+    
+    // Default portal styling or valid target styling
+    const targetStyle = isValidTarget 
+      ? 'ring-4 ring-green-400 ring-opacity-80 animate-pulse scale-105' 
+      : '';
+    return `${portalColor} border-2 border-white/30 cursor-default shadow-lg transition-all duration-300 ${targetStyle}`;
+  };
+
   // Cell styling based on content and state
   const getCellStyling = () => {
     if (box === null) {
@@ -72,12 +115,7 @@ const GameCell = ({
     } else if (box.type === 'blocker') {
       return 'bg-gradient-to-br from-gray-600 to-gray-800 border-2 border-gray-500 cursor-not-allowed shadow-lg transition-all duration-300';
     } else if (box.type === 'portal') {
-      const portalColor = PORTAL_COLORS[box.portalId] || 'bg-blue-500';
-      // Add a visual indicator if this is a valid target
-      const targetStyle = isValidTarget 
-        ? 'ring-4 ring-green-400 ring-opacity-80 animate-pulse scale-105' 
-        : '';
-      return `${portalColor} border-2 border-white/30 cursor-default shadow-lg transition-all duration-300 ${targetStyle}`;
+      return getPortalStyling();
     } else {
       return 'bg-gradient-to-br from-white/90 to-white/70 border-2 border-white/30 hover:from-white/100 hover:to-white/80 shadow-lg hover:shadow-xl transition-all duration-300';
     }
@@ -106,14 +144,50 @@ const GameCell = ({
 
   // Animation transforms
   const getAnimationStyle = () => {
+    // Falling animation
+    if (isFalling) {
+      return {
+        transform: `translateY(${fallDistance * GRID_CONFIG.TOTAL_CELL_SIZE}px)`,
+        transition: `transform ${fallDistance * 150}ms ease-in`
+      };
+    }
+    
+    // Portal animations
+    if (isTeleportEnter && portalEnterAnimation) {
+      // Box entering portal animation - shrink and fade
+      return {
+        transform: 'scale(0.1)',
+        opacity: 0,
+        transition: `all ${ANIMATION_CONFIG.PORTAL_ENTER_DURATION}ms ease-in`
+      };
+    }
+    
+    if (isTeleportExit && portalExitAnimation) {
+      // Box exiting portal animation - grow and appear
+      return {
+        transform: 'scale(1)',
+        opacity: 1,
+        transition: `all ${ANIMATION_CONFIG.PORTAL_EXIT_DURATION}ms ease-out`
+      };
+    }
+    
+    // Default transition
     return {
-      transform: isFalling 
-        ? `translateY(${fallDistance * GRID_CONFIG.TOTAL_CELL_SIZE}px)` 
-        : undefined,
-      transition: isFalling 
-        ? `transform ${fallDistance * 150}ms ease-in`
-        : box === null ? 'none' : 'all 0.3s'
+      transition: box === null ? 'none' : 'all 0.3s'
     };
+  };
+
+  // Render portal connection effect
+  const renderPortalConnection = () => {
+    if (isActivePortal && portalConnectAnimation) {
+      return (
+        <div className="absolute inset-0 overflow-visible">
+          <div className="absolute inset-0 bg-white/30 animate-pulse z-10"></div>
+          <div className="absolute inset-1 bg-white/50 rounded-full animate-ping"></div>
+        </div>
+      );
+    }
+    return null;
   };
 
   // Render cell content based on box type
@@ -137,17 +211,16 @@ const GameCell = ({
       );
     } else if (box && box.type === 'portal') {
       return (
-        <div className="w-full h-full flex items-center justify-center relative">
+        <div className="w-full h-full flex items-center justify-center relative cursor-pointer">
           {/* Portal visual - swirling effect */}
           <div className="absolute inset-2 rounded-full bg-white/30 animate-spin"></div>
           <div className="absolute inset-3 rounded-full bg-white/20 animate-spin" 
                style={{animationDirection: 'reverse', animationDuration: '3s'}}></div>
           <div className="absolute inset-4 rounded-full bg-white/10 animate-pulse"></div>
           
-          {/* Portal ID */}
-          <span className="relative text-white font-bold text-2xl drop-shadow-lg">
-            {box.portalId}
-          </span>
+          {/* Portal connection animation */}
+          {renderPortalConnection()}
+          
         </div>
       );
     } else if (box) {
@@ -175,6 +248,8 @@ const GameCell = ({
         ${isFalling ? 'falling-box' : ''}
         ${isDraggedBox && dragDirection === 'left' ? 'drag-left' : ''}
         ${isDraggedBox && dragDirection === 'right' ? 'drag-right' : ''}
+        ${isTeleportEnter ? 'teleport-enter' : ''}
+        ${isTeleportExit ? 'teleport-exit' : ''}
       `}
       style={getAnimationStyle()}
       onClick={() => onCellClick(rowIndex, colIndex)}

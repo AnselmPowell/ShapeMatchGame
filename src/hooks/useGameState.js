@@ -79,6 +79,10 @@ export const useGameState = () => {
   const [isGravityAnimating, setIsGravityAnimating] = useState(false);
   const [teleportingBoxes, setTeleportingBoxes] = useState([]);
   const [isTeleporting, setIsTeleporting] = useState(false);
+  const [portalEnterAnimation, setPortalEnterAnimation] = useState(false);
+  const [portalConnectAnimation, setPortalConnectAnimation] = useState(false);
+  const [portalExitAnimation, setPortalExitAnimation] = useState(false);
+  const [activePortals, setActivePortals] = useState([]);
   
   // Board management functions
   const toggleBoardMode = () => {
@@ -176,6 +180,14 @@ export const useGameState = () => {
     setTeleportingBoxes,
     isTeleporting,
     setIsTeleporting,
+    portalEnterAnimation, 
+    setPortalEnterAnimation,
+    portalConnectAnimation,
+    setPortalConnectAnimation,
+    portalExitAnimation,
+    setPortalExitAnimation,
+    activePortals,
+    setActivePortals,
     
     // Board management state
     boardMode,

@@ -73,3 +73,36 @@ export const getCellFallDistance = (fallingBoxes, row, col) => {
 export const isCellMatching = (matchingBoxes, row, col) => {
   return matchingBoxes.some(([r, c]) => r === row && c === col);
 };
+
+/**
+ * Check if a cell is part of a teleporting box animation
+ * @param {Array} teleportingBoxes - Array of teleporting box data
+ * @param {string} phase - 'enter' or 'exit' to check specific animation phase
+ * @param {number} row - Row to check
+ * @param {number} col - Column to check
+ */
+export const isTeleportingBox = (teleportingBoxes, phase, row, col) => {
+  if (!teleportingBoxes || teleportingBoxes.length === 0) return false;
+  
+  return teleportingBoxes.some(teleport => {
+    if (phase === 'enter') {
+      // For enter animation, check if this is the original box position
+      return teleport.fromRow === row && teleport.fromCol === col;
+    } else if (phase === 'exit') {
+      // For exit animation, check if this is the destination portal position
+      return teleport.exitRow === row && teleport.exitCol === col;
+    }
+    return false;
+  });
+};
+
+/**
+ * Check if a cell is an active portal during teleportation
+ */
+export const isTeleportingPortal = (activePortals, row, col) => {
+  if (!activePortals || activePortals.length === 0) return false;
+  
+  return activePortals.some(portal => 
+    portal.row === row && portal.col === col
+  );
+}

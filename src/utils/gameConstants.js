@@ -256,7 +256,10 @@ export const ANIMATION_CONFIG = {
   CASCADE_DELAY: 200,        // Delay between cascade cycles
   GRAVITY_BUFFER: 200,       // Extra time for gravity completion
   SETTLE_DELAY: 100,         // Delay before match checking
-  TELEPORT_DURATION: 500     // Portal teleportation animation
+  PORTAL_ENTER_DURATION: 300,    // Box enters portal animation
+  PORTAL_CONNECTION_DURATION: 200, // Portal connection animation  
+  PORTAL_EXIT_DURATION: 300,     // Box exits portal animation
+  TELEPORT_DURATION: 800     // Total teleportation animation (enter+connection+exit)
 };
 
 // Game setup constants

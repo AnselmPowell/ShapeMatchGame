@@ -19,7 +19,15 @@ export const useGameLogic = (gameState, animations) => {
     isAnimating,
     isGravityAnimating,
     setIsTeleporting,
-    setTeleportingBoxes
+    setTeleportingBoxes,
+    portalEnterAnimation,
+    setPortalEnterAnimation,
+    portalConnectAnimation,
+    setPortalConnectAnimation,
+    portalExitAnimation,
+    setPortalExitAnimation,
+    activePortals,
+    setActivePortals
   } = gameState;
   
   const { animateGravity } = animations;
@@ -62,42 +70,77 @@ export const useGameLogic = (gameState, animations) => {
       if (pairedPortal) {
         console.log(`Found paired portal at (${pairedPortal.row},${pairedPortal.col})`);
         
-        // Mark as teleporting for animation purposes
-        setIsTeleporting(true);
+        // Mark source and destination portals as active
+        setActivePortals([
+          { row: toRow, col: toCol, portalId },
+          { row: pairedPortal.row, col: pairedPortal.col, portalId }
+        ]);
+        
+        // Set up teleportation data
         setTeleportingBoxes([{
-          fromRow: toRow,
-          fromCol: toCol,
-          toRow: pairedPortal.row,
-          toCol: pairedPortal.col
+          fromRow, // Original box position
+          fromCol,
+          enterRow: toRow, // Portal entrance position
+          enterCol: toCol,
+          exitRow: pairedPortal.row, // Portal exit position
+          exitCol: pairedPortal.col,
+          portalId
         }]);
         
-        // Move the box to the destination portal
-        newGrid[pairedPortal.row][pairedPortal.col] = box;
+        // Remove box from original position
+        newGrid[fromRow][fromCol] = null;
         
-        // Remove both portals from the grid
-        removePortalPair(newGrid, portalId);
-        
-        // Update grid immediately
+        // Update grid (portals still in place)
         setGrid(newGrid);
         setSelectedBox(null);
         
-        // Increment moves and check limit
+        // Increment moves counter
         const newMoveCount = moves + 1;
         setMoves(newMoveCount);
-        console.log(`Moves updated: ${moves} -> ${newMoveCount}`);
         
         // Check if out of moves
         if (newMoveCount >= moveLimit) {
           setIsOutOfMoves(true);
-          console.log("Out of moves!");
         }
         
-        // Start gravity animation after teleport animation
+        // PHASE 1: Box enters portal animation
+        setIsTeleporting(true);
+        setPortalEnterAnimation(true);
+        
         setTimeout(() => {
-          setIsTeleporting(false);
-          setTeleportingBoxes([]);
-          animateGravity(newGrid);
-        }, ANIMATION_CONFIG.TELEPORT_DURATION);
+          // PHASE 2: Portal connection animation
+          setPortalEnterAnimation(false);
+          setPortalConnectAnimation(true);
+          
+          setTimeout(() => {
+            // PHASE 3: Box exits from destination portal
+            setPortalConnectAnimation(false);
+            setPortalExitAnimation(true);
+            
+            // Create a new grid with the box at the destination
+            const finalGrid = cloneGrid(newGrid);
+            finalGrid[pairedPortal.row][pairedPortal.col] = box;
+            setGrid(finalGrid);
+            
+            setTimeout(() => {
+              // PHASE 4: Animation complete, remove portals
+              setPortalExitAnimation(false);
+              
+              // Remove the portals from the grid
+              const portalClearedGrid = cloneGrid(finalGrid);
+              removePortalPair(portalClearedGrid, portalId);
+              setGrid(portalClearedGrid);
+              
+              // Reset animation states
+              setIsTeleporting(false);
+              setTeleportingBoxes([]);
+              setActivePortals([]);
+              
+              // Continue with gravity
+              animateGravity(portalClearedGrid);
+            }, ANIMATION_CONFIG.PORTAL_EXIT_DURATION);
+          }, ANIMATION_CONFIG.PORTAL_CONNECTION_DURATION);
+        }, ANIMATION_CONFIG.PORTAL_ENTER_DURATION);
       } else {
         // If no paired portal found (shouldn't happen in normal gameplay)
         console.log("No paired portal found - just place on the portal");
