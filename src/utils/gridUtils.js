@@ -21,6 +21,15 @@ export const createBlockerBox = () => ({
 });
 
 /**
+ * Create a portal box
+ */
+export const createPortalBox = (portalId) => ({
+  type: 'portal',
+  portalId,
+  id: Math.random().toString(36).substr(2, 9)
+});
+
+/**
  * Create an empty grid structure
  */
 export const createEmptyGrid = () => {
@@ -50,6 +59,9 @@ export const convertCustomBoard = (simpleBoard) => {
         grid[row][col] = null;
       } else if (cell === "X") {
         grid[row][col] = createBlockerBox();
+      } else if (cell.startsWith('p') && cell.length === 2) {
+        // Handle portal cells (p1, p2, etc.)
+        grid[row][col] = createPortalBox(cell);
       } else if (SYMBOL_TO_SHAPE[cell]) {
         // Create moveable box with consistent color
         const shapeData = SYMBOL_TO_SHAPE[cell];
@@ -77,7 +89,7 @@ export const isValidCoordinate = (row, col) => {
  * Check if a cell contains a moveable box
  */
 export const isMoveableBox = (box) => {
-  return box && box.type !== 'blocker';
+  return box && box.type !== 'blocker' && box.type !== 'portal';
 };
 
 /**

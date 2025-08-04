@@ -27,7 +27,8 @@ export const applyGravity = (inputGrid) => {
       for (let row = gridRows - 2; row >= 0; row--) {
         const currentBox = newGrid[row][col];
         
-        // Only process moveable boxes
+        
+        // Only process moveable boxes (not blockers or portals)
         if (isMoveableBox(currentBox)) {
           const spaceBelow = newGrid[row + 1][col];
           
@@ -115,9 +116,52 @@ export const isValidMove = (grid, fromRow, fromCol, toRow, toCol) => {
   // Must be within bounds
   if (toRow < 0 || toRow >= gridRows || toCol < 0 || toCol >= gridCols) return false;
   
-  // Target must be empty
-  if (!isEmpty(grid[toRow][toCol])) return false;
+  // Target must be empty or a portal
+  const targetCell = grid[toRow][toCol];
+  if (targetCell !== null && targetCell.type !== 'portal') return false;
   
   // Must be exactly one space left or right
   return Math.abs(toCol - fromCol) === 1;
+};
+
+/**
+ * Find a paired portal in the grid with the same portalId
+ */
+export const findPairedPortal = (grid, portalId, currentRow, currentCol) => {
+  const gridRows = grid.length;
+  
+  for (let row = 0; row < gridRows; row++) {
+    const gridCols = grid[row]?.length || 0;
+    
+    for (let col = 0; col < gridCols; col++) {
+      const cell = grid[row][col];
+      
+      if (cell && 
+          cell.type === 'portal' && 
+          cell.portalId === portalId && 
+          (row !== currentRow || col !== currentCol)) {
+        return { row, col };
+      }
+    }
+  }
+  return null;
+};
+
+/**
+ * Remove all portals with the given portalId from the grid
+ */
+export const removePortalPair = (grid, portalId) => {
+  const gridRows = grid.length;
+  
+  for (let row = 0; row < gridRows; row++) {
+    const gridCols = grid[row]?.length || 0;
+    
+    for (let col = 0; col < gridCols; col++) {
+      const cell = grid[row][col];
+      
+      if (cell && cell.type === 'portal' && cell.portalId === portalId) {
+        grid[row][col] = null;
+      }
+    }
+  }
 };

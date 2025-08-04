@@ -4,7 +4,7 @@ import {
   getCellFallDistance, 
   isCellMatching 
 } from '../../utils/animationUtils';
-import { GRID_CONFIG } from '../../utils/gameConstants';
+import { GRID_CONFIG, PORTAL_COLORS } from '../../utils/gameConstants';
 
 /**
  * Individual game cell component with animations and interactions
@@ -38,7 +38,7 @@ const GameCell = ({
 
   // Mouse event handlers for dragging
   const handleMouseDown = (e) => {
-    if (box && box.type !== 'blocker') {
+    if (box && box.type !== 'blocker' && box.type !== 'portal') {
       console.log("Mouse down on cell", rowIndex, colIndex);
       onDragStart(rowIndex, colIndex, e.clientX);
       e.preventDefault(); // Prevent text selection during drag
@@ -47,7 +47,7 @@ const GameCell = ({
   
   // Touch event handlers for mobile
   const handleTouchStart = (e) => {
-    if (box && box.type !== 'blocker') {
+    if (box && box.type !== 'blocker' && box.type !== 'portal') {
       console.log("Touch start on cell", rowIndex, colIndex);
       onDragStart(rowIndex, colIndex, e.touches[0].clientX);
     }
@@ -71,6 +71,13 @@ const GameCell = ({
         : '';
     } else if (box.type === 'blocker') {
       return 'bg-gradient-to-br from-gray-600 to-gray-800 border-2 border-gray-500 cursor-not-allowed shadow-lg transition-all duration-300';
+    } else if (box.type === 'portal') {
+      const portalColor = PORTAL_COLORS[box.portalId] || 'bg-blue-500';
+      // Add a visual indicator if this is a valid target
+      const targetStyle = isValidTarget 
+        ? 'ring-4 ring-green-400 ring-opacity-80 animate-pulse scale-105' 
+        : '';
+      return `${portalColor} border-2 border-white/30 cursor-default shadow-lg transition-all duration-300 ${targetStyle}`;
     } else {
       return 'bg-gradient-to-br from-white/90 to-white/70 border-2 border-white/30 hover:from-white/100 hover:to-white/80 shadow-lg hover:shadow-xl transition-all duration-300';
     }
@@ -83,6 +90,9 @@ const GameCell = ({
     } else if (isDraggedBox) {
       // Just add a subtle indicator that this box is being dragged
       return 'ring-2 ring-white ring-opacity-50';
+    } else if (box?.type === 'portal') {
+      // Portal styling
+      return 'hover:scale-105 animate-pulse';
     } else if (box?.type !== 'blocker' && box !== null) {
       return 'hover:scale-105';
     }
@@ -123,6 +133,21 @@ const GameCell = ({
             <div className="absolute top-1/3 bottom-1/3 right-1/4 w-px bg-gray-900"></div>
             <div className="absolute top-2/3 bottom-0 left-1/2 w-px bg-gray-900"></div>
           </div>
+        </div>
+      );
+    } else if (box && box.type === 'portal') {
+      return (
+        <div className="w-full h-full flex items-center justify-center relative">
+          {/* Portal visual - swirling effect */}
+          <div className="absolute inset-2 rounded-full bg-white/30 animate-spin"></div>
+          <div className="absolute inset-3 rounded-full bg-white/20 animate-spin" 
+               style={{animationDirection: 'reverse', animationDuration: '3s'}}></div>
+          <div className="absolute inset-4 rounded-full bg-white/10 animate-pulse"></div>
+          
+          {/* Portal ID */}
+          <span className="relative text-white font-bold text-2xl drop-shadow-lg">
+            {box.portalId}
+          </span>
         </div>
       );
     } else if (box) {

@@ -64,7 +64,11 @@ const ShapeMatchGame = () => {
     
     console.log(`Clicked on (${row},${col}), selectedBox:`, selectedBox);
     
-    if (grid[row][col] === null) {
+    // Get the clicked cell
+    const clickedCell = grid[row][col];
+    
+    // Case 1: Clicked on an empty cell
+    if (clickedCell === null) {
       if (selectedBox) {
         // ONLY allow horizontal movement (same row, adjacent column)
         const isSameRow = row === selectedBox.row;
@@ -79,8 +83,26 @@ const ShapeMatchGame = () => {
           console.log("Invalid move - not same row or not adjacent");
         }
       }
-    } else if (grid[row][col].type !== 'blocker') {
-      // Only allow selection of moveable boxes, not blockers
+    }
+    // Case 2: Clicked on a portal
+    else if (clickedCell.type === 'portal') {
+      if (selectedBox) {
+        // Check if the portal is a valid move target for the selected box
+        const isSameRow = row === selectedBox.row;
+        const isAdjacent = Math.abs(col - selectedBox.col) === 1;
+        
+        if (isSameRow && isAdjacent) {
+          console.log("Valid move to portal - executing");
+          moveBox(selectedBox.row, selectedBox.col, row, col);
+        } else {
+          console.log("Invalid move to portal - not same row or not adjacent");
+        }
+      }
+      // Do nothing if no box is selected (don't select the portal)
+    }
+    // Case 3: Clicked on a moveable box (not blocker, not portal)
+    else if (clickedCell.type !== 'blocker') {
+      // Only allow selection of moveable boxes
       console.log("Selecting box");
       setSelectedBox({ row, col });
     }

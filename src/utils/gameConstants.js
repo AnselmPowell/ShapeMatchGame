@@ -27,8 +27,23 @@ export const SYMBOL_TO_SHAPE = {
   '♠': { symbol: '♠', color: 'text-pink-500' }
 };
 
+// Portal colors for visual distinction
+export const PORTAL_COLORS = {
+  'p1': 'bg-cyan-500',
+  'p2': 'bg-purple-500',
+  'p3': 'bg-amber-500'
+};
+
 // Custom board layouts - Educational progression
 export const CUSTOM_BOARDS = [
+  // Portal test level
+  [
+    [null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, null, null, null, null, null],
+    [null, null, null, null, "X", null, null, "p2", null],
+    [null, null, null, null, "X", null, null, null, null],
+    ["p2", "p1", null, '■', "X", null, '■', null, "p1"]
+  ],
 
   [
     [null, null, null, null, null, null, null, null, null ],
@@ -40,6 +55,7 @@ export const CUSTOM_BOARDS = [
     [null, null, null, null, null, null, null, null, null],
     [null, null, null, '■', null, null, '■', null, null]
   ],
+
   [
     [null, null, null, null, null, null, null, null, null, null],
     [null, null, null, null, null, null, null, null, null, null],
@@ -239,7 +255,8 @@ export const ANIMATION_CONFIG = {
   MATCH_DURATION: 600,       // Match animation duration
   CASCADE_DELAY: 200,        // Delay between cascade cycles
   GRAVITY_BUFFER: 200,       // Extra time for gravity completion
-  SETTLE_DELAY: 100          // Delay before match checking
+  SETTLE_DELAY: 100,         // Delay before match checking
+  TELEPORT_DURATION: 500     // Portal teleportation animation
 };
 
 // Game setup constants
@@ -254,6 +271,7 @@ export const GAME_CONFIG = {
 
 // Move limits for each custom board level
 export const LEVEL_MOVE_LIMITS = [
+  6,  // Level 0 - Portal test level
   4,  // Level 1 
   8,  // Level 2 
   8, // Level 3 

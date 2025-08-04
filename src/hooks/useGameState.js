@@ -77,6 +77,8 @@ export const useGameState = () => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [fallingBoxes, setFallingBoxes] = useState([]);
   const [isGravityAnimating, setIsGravityAnimating] = useState(false);
+  const [teleportingBoxes, setTeleportingBoxes] = useState([]);
+  const [isTeleporting, setIsTeleporting] = useState(false);
   
   // Board management functions
   const toggleBoardMode = () => {
@@ -170,6 +172,10 @@ export const useGameState = () => {
     setFallingBoxes,
     isGravityAnimating,
     setIsGravityAnimating,
+    teleportingBoxes,
+    setTeleportingBoxes,
+    isTeleporting,
+    setIsTeleporting,
     
     // Board management state
     boardMode,

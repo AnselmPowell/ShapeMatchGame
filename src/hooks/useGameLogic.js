@@ -1,4 +1,4 @@
-import { isValidMove } from '../utils/gameLogicUtils';
+import { isValidMove, findPairedPortal, removePortalPair } from '../utils/gameLogicUtils';
 import { cloneGrid, getMoveableBoxes } from '../utils/gridUtils';
 import { ANIMATION_CONFIG } from '../utils/gameConstants';
 
@@ -17,7 +17,9 @@ export const useGameLogic = (gameState, animations) => {
     setIsOutOfMoves,
     setPreviousGridState,
     isAnimating,
-    isGravityAnimating
+    isGravityAnimating,
+    setIsTeleporting,
+    setTeleportingBoxes
   } = gameState;
   
   const { animateGravity } = animations;
@@ -48,29 +50,105 @@ export const useGameLogic = (gameState, animations) => {
     const newGrid = cloneGrid(grid);
     const box = newGrid[fromRow][fromCol];
     newGrid[fromRow][fromCol] = null;
-    newGrid[toRow][toCol] = box;
-
-    // Update grid immediately for horizontal move
-    setGrid(newGrid);
-    setSelectedBox(null);
     
-    // Increment moves and check limit
-    const newMoveCount = moves + 1;
-    setMoves(newMoveCount);
-    console.log(`Moves updated: ${moves} -> ${newMoveCount}`);
-    
-    // Check if out of moves (will be one move ahead)
-    if (newMoveCount >= moveLimit) {
-      setIsOutOfMoves(true);
-      console.log("Out of moves!");
+    // Check if destination is a portal
+    if (newGrid[toRow][toCol]?.type === 'portal') {
+      const portalId = newGrid[toRow][toCol].portalId;
+      console.log(`Moving box to portal ${portalId}`);
+      
+      // Find the paired portal
+      const pairedPortal = findPairedPortal(newGrid, portalId, toRow, toCol);
+      
+      if (pairedPortal) {
+        console.log(`Found paired portal at (${pairedPortal.row},${pairedPortal.col})`);
+        
+        // Mark as teleporting for animation purposes
+        setIsTeleporting(true);
+        setTeleportingBoxes([{
+          fromRow: toRow,
+          fromCol: toCol,
+          toRow: pairedPortal.row,
+          toCol: pairedPortal.col
+        }]);
+        
+        // Move the box to the destination portal
+        newGrid[pairedPortal.row][pairedPortal.col] = box;
+        
+        // Remove both portals from the grid
+        removePortalPair(newGrid, portalId);
+        
+        // Update grid immediately
+        setGrid(newGrid);
+        setSelectedBox(null);
+        
+        // Increment moves and check limit
+        const newMoveCount = moves + 1;
+        setMoves(newMoveCount);
+        console.log(`Moves updated: ${moves} -> ${newMoveCount}`);
+        
+        // Check if out of moves
+        if (newMoveCount >= moveLimit) {
+          setIsOutOfMoves(true);
+          console.log("Out of moves!");
+        }
+        
+        // Start gravity animation after teleport animation
+        setTimeout(() => {
+          setIsTeleporting(false);
+          setTeleportingBoxes([]);
+          animateGravity(newGrid);
+        }, ANIMATION_CONFIG.TELEPORT_DURATION);
+      } else {
+        // If no paired portal found (shouldn't happen in normal gameplay)
+        console.log("No paired portal found - just place on the portal");
+        newGrid[toRow][toCol] = box;
+        
+        // Update grid immediately
+        setGrid(newGrid);
+        setSelectedBox(null);
+        
+        // Increment moves and check limit
+        const newMoveCount = moves + 1;
+        setMoves(newMoveCount);
+        console.log(`Moves updated: ${moves} -> ${newMoveCount}`);
+        
+        // Check if out of moves
+        if (newMoveCount >= moveLimit) {
+          setIsOutOfMoves(true);
+          console.log("Out of moves!");
+        }
+        
+        // Start gravity animation after brief delay
+        setTimeout(() => {
+          animateGravity(newGrid);
+        }, ANIMATION_CONFIG.HORIZONTAL_DELAY);
+      }
+    } else {
+      // Regular move - just place the box
+      newGrid[toRow][toCol] = box;
+      
+      // Update grid immediately
+      setGrid(newGrid);
+      setSelectedBox(null);
+      
+      // Increment moves and check limit
+      const newMoveCount = moves + 1;
+      setMoves(newMoveCount);
+      console.log(`Moves updated: ${moves} -> ${newMoveCount}`);
+      
+      // Check if out of moves
+      if (newMoveCount >= moveLimit) {
+        setIsOutOfMoves(true);
+        console.log("Out of moves!");
+      }
+      
+      // Start gravity animation after brief delay
+      console.log("Setting timeout for gravity animation");
+      setTimeout(() => {
+        console.log("Starting gravity animation");
+        animateGravity(newGrid);
+      }, ANIMATION_CONFIG.HORIZONTAL_DELAY);
     }
-    
-    // Start gravity animation after brief delay to show horizontal move
-    console.log("Setting timeout for gravity animation");
-    setTimeout(() => {
-      console.log("Starting gravity animation");
-      animateGravity(newGrid);
-    }, ANIMATION_CONFIG.HORIZONTAL_DELAY);
   };
 
   /**
@@ -78,9 +156,16 @@ export const useGameLogic = (gameState, animations) => {
    */
   const isValidMoveTarget = (row, col) => {
     if (!selectedBox) return false;
-    if (grid[row][col] !== null) return false;
+    
+    // Must be same row
     if (row !== selectedBox.row) return false;
-    return Math.abs(col - selectedBox.col) === 1;
+    
+    // Must be adjacent
+    if (Math.abs(col - selectedBox.col) !== 1) return false;
+    
+    // Target must be empty or a portal
+    const targetCell = grid[row][col];
+    return targetCell === null || targetCell?.type === 'portal';
   };
 
   /**

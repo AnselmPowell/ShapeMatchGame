@@ -35,8 +35,8 @@ export const useDragMovement = (gameState, gameLogic) => {
       return;
     }
     
-    if (grid[row][col] === null || grid[row][col].type === 'blocker') {
-      console.log("Can't start drag - empty cell or blocker");
+    if (grid[row][col] === null || grid[row][col].type === 'blocker' || grid[row][col].type === 'portal') {
+      console.log("Can't start drag - empty cell, blocker, or portal");
       return;
     }
     
@@ -105,7 +105,7 @@ export const useDragMovement = (gameState, gameLogic) => {
         targetCol >= 0 && 
         targetCol < GRID_CONFIG.COLS && 
         grid[row] && 
-        grid[row][targetCol] === null
+        (grid[row][targetCol] === null || grid[row][targetCol]?.type === 'portal')
       ) {
         console.log("EXECUTING MOVE!");
         // Execute move
